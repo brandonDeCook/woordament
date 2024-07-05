@@ -16,6 +16,8 @@ const gridSize = 4;
 const cellSize = 100;
 let selectedLetters = [];
 let selectedText;
+let isSelecting = false;
+let prevSelectionCordinates = [];
 
 function preload() {
     this.load.image('background', 'path/to/background/image');  // Optional background image
@@ -52,7 +54,8 @@ function create() {
             container.setInteractive();
             container.selected = false;
             container.id = x.toString() + y.toString();
-            container.on('pointerover', () => selectBox(container, text, x, y));
+            container.on('pointerover', () => selectBox(container, text, false, x, y));
+            container.on('pointerdown', () => selectBox(container, text, true, x, y));
             grid[y][x] = { container, text, box };
         }
     }
@@ -61,41 +64,38 @@ function create() {
     selectedText = this.add.text(50, 500, 'Selected: ', { fontSize: '32px', fill: 'white' });
 
     // Input events
-    this.input.on('pointerdown', startSelection);
     this.input.on('pointerup', endSelection);
 }
 
-let isSelecting = false;
-
 function update() {
     selectedText.setText('Selected: ' + selectedLetters.join(''));
-}
-
-function startSelection(pointer) {
-    isSelecting = true;
-    selectedLetters = []; // Clear previous selection
-    grid.forEach(row => row.forEach(container => {
-        //console.log(container);
-        container.text.setColor('black'); // Reset color of letters
-        container.box.setFillStyle(0xeeeeee); // Reset color of boxes
-        container.selected = false;
-        console.log("reseting container id to false: " + container.id);
-        console.log(grid);
-    }));
 }
 
 function endSelection(pointer) {
     isSelecting = false;
 }
 
-function selectBox(container, text, x, y) {
-    console.log('isSelecting:', isSelecting);  // Log the isSelecting variable
-    console.log('container.selected:', container.selected);  // Log the isSelecting variable
-    console.log('container.id:', container.id);  // Log the isSelecting variable
+function selectBox(container, text, isStartSelecting, x, y) {
+    if(isStartSelecting){
+        isSelecting = true;
+        selectedLetters = []; // Clear previous selection
+        prevSelectionCordinates = [x,y];
+        grid.forEach(row => row.forEach(cell => {            
+            if(container.id != cell.container.id){ // Only reset non selected cells
+                cell.container.selected = false;
+                cell.text.setColor('black'); // Reset color of letters
+                cell.box.setFillStyle(0xeeeeee); // Reset color of boxes
+            }
+        }));
+    }
+
+    // TODO: Valdiate next container selection is valid by making sure its adjacent to the current selection
+
     if (isSelecting && !container.selected) {
         text.setColor('#f00');  // Change color of letter to indicate selection
         container.getAt(0).setFillStyle(0xffaaaa);  // Change color of box to indicate selection
         container.selected = true;
         selectedLetters.push(text.text);
+        prevSelectionCordinates = [x,y];
     }
 }
