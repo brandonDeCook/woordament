@@ -24,18 +24,19 @@ let loadedWordList = [
   "PIE",
   "RED",
   "REDS",
-  "PIE",
   "PITS",
   "TIME",
 ];
 const gridSize = 4;
 const cellSize = 100;
 const cellBuffer = 10;
-let selectedLetters = [];
+let correctSelectedWords = [];
 let selectedContainers = [];
 let selectedText;
 let isSelecting = false;
 let prevSelectionCordinates = [];
+let timerText;
+let timeRemaining = 90; // 1 minute and 30 seconds
 
 function preload() {
   //this.load.image("background", "path/to/background/image"); // Optional background image
@@ -78,6 +79,7 @@ function create() {
       container.setInteractive();
       container.selected = false;
       container.id = x.toString() + y.toString();
+      container.letter = letter;
       container.on("pointerover", () =>
         selectBox(container, text, false, x, y)
       );
@@ -87,38 +89,66 @@ function create() {
   }
 
   // Text to display selected letters
-  /**selectedText = this.add.text(50, 500, "Selected: ", {
+  selectedText = this.add.text(198, 530, "Selected: ", {
     fontSize: "32px",
     fill: "white",
-  });**/
+  });
+
+  // Add timer text
+  timerText = this.add.text(300, 40, "Time: 01:30", {
+    fontSize: "32px",
+    fill: "#ffffff",
+  });
+
+  // Set up timer event to decrement the timer every second
+  this.time.addEvent({
+    delay: 1000,
+    callback: updateTimer,
+    callbackScope: this,
+    loop: true,
+  });
 
   // Input events
   this.input.on("pointerup", endSelection);
 }
 
 function update() {
-  //selectedText.setText("Selected: " + selectedLetters.join(""));
+  selectedText.setText("Selected: " + getSelectedText());
+}
+
+function getSelectedText() {
+  return selectedContainers
+    .map((selectedContainer) => selectedContainer.container.letter)
+    .join("");
 }
 
 function endSelection(pointer) {
   // Check if the selected letters form a valid word
-  const selectedWord = selectedLetters.join("");
-  if (loadedWordList.includes(selectedWord)) {
+  const selectedWord = getSelectedText();
+  if (
+    loadedWordList.includes(selectedWord) &&
+    !correctSelectedWords.includes(selectedWord)
+  ) {
     // Highlight the selected letters in green if they form a valid word
     selectedContainers.forEach((container) => {
       container.text.setColor("black");
       container.box.setFillStyle(0x00ff00);
     });
-  }else{
+    correctSelectedWords.push(selectedWord);
+  } else if (correctSelectedWords.includes(selectedWord)) {
     selectedContainers.forEach((container) => {
-        container.text.setColor("white");
-        container.box.setFillStyle(0xFF0000);
-      });
+      container.text.setColor("white");
+      container.box.setFillStyle(0xffcc00);
+    });
+  } else {
+    selectedContainers.forEach((container) => {
+      container.text.setColor("white");
+      container.box.setFillStyle(0xff0000);
+    });
   }
 
   // Reset for a new selection
   isSelecting = false;
-  selectedLetters = []; // Clear previous selection
   prevSelectionCordinates = [];
   selectedContainers = [];
   grid.forEach((row) =>
@@ -179,12 +209,28 @@ function selectBox(container, text, isStartSelecting, x, y) {
     }
 
     if (isValidSelection) {
-      text.setColor('#FFFFFF'); // Change color of letter to indicate selection
-      container.getAt(0).setFillStyle(0x6FA8DC); // Change color of box to indicate selection
+      text.setColor("#FFFFFF"); // Change color of letter to indicate selection
+      container.getAt(0).setFillStyle(0x6fa8dc); // Change color of box to indicate selection
       container.selected = true;
-      selectedLetters.push(text.text);
       selectedContainers.push({ container, text, box: container.getAt(0) });
       prevSelectionCordinates = [x, y];
     }
+  }
+}
+
+function updateTimer() {
+  if (timeRemaining > 0) {
+    timeRemaining--;
+    let minutes = Math.floor(timeRemaining / 60);
+    let seconds = timeRemaining % 60;
+    timerText.setText(
+      `Time: ${minutes < 10 ? "0" + minutes : minutes}:${
+        seconds < 10 ? "0" + seconds : seconds
+      }`
+    );
+  } else {
+    // Handle what happens when the timer reaches 0
+    timerText.setText("Time: 00:00");
+    this.scene.pause(); // Optionally pause the game
   }
 }
