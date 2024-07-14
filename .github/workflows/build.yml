@@ -8,15 +8,16 @@ jobs:
     runs-on: "ubuntu-latest"
 
     steps:
-      - task: UseNode@1
-        inputs:
-          version: "16.x"
-        displayName: "Install Node.js"
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - script: npm install
-        workingDirectory: "./src/client"
-        displayName: "Install node modules"
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16' # You can specify the version you need
 
-      - script: npm run build install
-        workingDirectory: "./src/client"
-        displayName: "Install node modules"
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
