@@ -20,13 +20,3 @@ jobs:
       - script: npm run build install
         workingDirectory: "./src/client"
         displayName: "Install node modules"
-
-      - task: CopyFiles@2
-        inputs:
-          Contents: "build/**" # Pull the build directory (React)
-          TargetFolder: "$(Build.ArtifactStagingDirectory)"
-
-      - task: PublishBuildArtifacts@1
-        inputs:
-          PathtoPublish: $(Build.ArtifactStagingDirectory) # dist or build files
-          ArtifactName: "www" # output artifact named www
