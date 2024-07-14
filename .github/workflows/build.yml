@@ -26,13 +26,13 @@ jobs:
           cd src/client
           npm run build
       
-      - name: Zip artifacts
+      - name: Archive build artifacts
         run: |
           cd src/client
-          tar -czf build-artifacts.tar.gz -C dist
+          zip -r build-artifacts.zip dist
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
-          path: src/client/build-artifacts.tar.gz
+          path: src/client/build-artifacts.zip
