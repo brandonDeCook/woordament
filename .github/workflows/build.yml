@@ -26,12 +26,13 @@ jobs:
           cd src/client
           npm run build
       
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      - name: Zip artifacts
+        run: |
+          cd src/client
+          tar -czf build-artifacts.tar.gz -C
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v2
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
         with:
-          name: app
-          path: release.zip
-          if-no-files-found: error
+          name: build-artifacts
+          path: src/client/build-artifacts.tar.gz
