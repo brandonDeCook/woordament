@@ -17,7 +17,11 @@ jobs:
           node-version: '16' # You can specify the version you need
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd src/client
+          npm install
 
       - name: Run build
-        run: npm run build
+        run: |
+          cd src/client
+          npm run build
