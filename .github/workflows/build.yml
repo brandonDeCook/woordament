@@ -25,34 +25,11 @@ jobs:
         run: |
           cd src/client
           npm run build
-
-      - name: List and traverse directory contents
-        run: |
-          #!/bin/bash
-
-          # Function to list contents and traverse directories
-          traverse_directory() {
-            local dir="$1"
-            echo "Contents of directory: $dir"
-            
-            # List the contents of the current directory
-            ls -l "$dir"
-
-            # Traverse each subdirectory
-            for entry in "$dir"/*; do
-              if [ -d "$entry" ]; then
-                traverse_directory "$entry"
-              fi
-            done
-          }
-
-          # Start traversal from the current directory
-          traverse_directory "$(pwd)"
       
       - name: Zip artifacts
         run: |
           cd src/client
-          tar -czf build-artifacts.tar.gz -C ./dist
+          tar -czf build-artifacts.tar.gz -C dist
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
