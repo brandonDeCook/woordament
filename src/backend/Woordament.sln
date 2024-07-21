@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C191FA7C-237B-4419-A527-65733D95C15D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "board-generator", "src\board-generator\board-generator.csproj", "{91A6246C-0880-41BC-BA0A-A674B9FD858D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{91A6246C-0880-41BC-BA0A-A674B9FD858D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91A6246C-0880-41BC-BA0A-A674B9FD858D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91A6246C-0880-41BC-BA0A-A674B9FD858D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91A6246C-0880-41BC-BA0A-A674B9FD858D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{91A6246C-0880-41BC-BA0A-A674B9FD858D} = {C191FA7C-237B-4419-A527-65733D95C15D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {696634B2-5985-4526-BD48-34FCA5039DE3}
+	EndGlobalSection
+EndGlobal
