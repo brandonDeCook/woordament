@@ -43,7 +43,7 @@ foreach (var row in outputRows)
 
 var board = new Board(words, tiles);
 
-const string connectionString = "DefaultEndpointsProtocol=https;AccountName=woordamentstorageeastus;AccountKey=bRxHm+uyxRG6rb0M3fwHPRAEzG0+ddDN1RKGDAGm5zSkZsv0K+3gn/6SZjvtxUoLVauq3dDpUO2S+AStZs6RpQ==;EndpointSuffix=core.windows.net";
+const string connectionString = "YourConnString";
 const string containerName = "boards";
 var blobName = $"{board.Id}.json";
 
