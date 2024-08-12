@@ -11,11 +11,12 @@ await Task.Delay(2000);
 
 // TODO: Generate tiles from ChatGPT
 
-char[,] tiles = {
-    { 'c', 'a', 't', 's' },
-    { 'r', 'e', 'd', 's' },
-    { 'o', 't', 'i', 'p' },
-    { 'k', 'l', 'm', 'e' }
+var tiles = new List<List<char>>()
+{
+    new() { 'u', 'y', 'g', 'r' },
+    new() { 'c', 's', 'n', 'e' },
+    new() { 'r', 'a', 's', 'n' },
+    new() { 'g', 'a', 't', 's' }
 };
 
 for (var i = 1; i <= 16; i++)
@@ -24,7 +25,7 @@ for (var i = 1; i <= 16; i++)
     var zeroBasedIndex = i - 1;
     var row = zeroBasedIndex / 4;
     var col = zeroBasedIndex % 4;
-    inputBox.SendKeys(tiles[row,col].ToString());
+    inputBox.SendKeys(tiles[row][col].ToString());
 }
 
 var outputRows = driver.FindElements(By.CssSelector("table.output-box tr"));

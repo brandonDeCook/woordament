@@ -2,39 +2,25 @@ import { Scene } from 'phaser';
 
 export class Game extends Scene {
 
-  constructor(){
+  constructor() {
     super('Game')
   }
 
+  init(data){
+    this.game = data.game;
+  }
+
   preload() {
-    //this.load.image("background", "path/to/background/image"); // Optional background image
+    this.loadedGrid = this.game.board.tiles;
+    this.loadedWordList = this.game.board.wordList;
   }
 
   create() {
-    // Optional background
-    //this.add.image(400, 300, "background");
-
     const cellSize = 100;
     const cellBuffer = 10;
 
     this.gridSize = 4;
     this.grid = [];
-    this.loadedGrid = [
-      ["C", "A", "T", "S"],
-      ["R", "E", "D", "S"],
-      ["O", "T", "I", "P"],
-      ["K", "L", "M", "E"],
-    ];
-    this.loadedWordList = [
-      "CAT",
-      "CATS",
-      "PIE",
-      "RED",
-      "REDS",
-      "PITS",
-      "TIME",
-    ];
-
     this.correctSelectedWords = [];
     this.selectedContainers = [];
     this.selectedText;
@@ -42,6 +28,7 @@ export class Game extends Scene {
     this.prevSelectionCordinates = [];
     this.timerText;
     this.timeRemaining = 90;
+    this.score = 0;
 
     // Calculate the starting position to center the grid
     const startX = (this.sys.canvas.width - this.gridSize * cellSize) / 2;
@@ -51,7 +38,7 @@ export class Game extends Scene {
     for (let y = 0; y < this.gridSize; y++) {
       this.grid[y] = [];
       for (let x = 0; x < this.gridSize; x++) {
-        const letter = this.loadedGrid[x][y];
+        const letter = this.loadedGrid[x][y].toUpperCase();
 
         // Create a container to hold the box and the letter
         const container = this.add.container(
@@ -97,6 +84,12 @@ export class Game extends Scene {
       fill: "#ffffff",
     });
 
+    // Add Score text
+    this.scoreText = this.add.text(198, 560, "Points:", {
+      fontSize: "32px",
+      fill: "#ffffff",
+    });
+
     // Set up timer event to decrement the timer every second
     this.time.addEvent({
       delay: 1000,
@@ -111,6 +104,7 @@ export class Game extends Scene {
 
   update() {
     this.selectedText.setText("Selected: " + this.getSelectedText());
+    this.scoreText.setText("Score: " + this.score);
   }
 
   getSelectedText() {
@@ -123,7 +117,7 @@ export class Game extends Scene {
     // Check if the selected letters form a valid word
     let selectedWord = this.scene.getSelectedText();
     if (
-      this.scene.loadedWordList.includes(selectedWord) &&
+      this.scene.loadedWordList.hasOwnProperty(selectedWord.toLowerCase()) &&
       !this.scene.correctSelectedWords.includes(selectedWord)
     ) {
       // Highlight the selected letters in green if they form a valid word
@@ -132,6 +126,7 @@ export class Game extends Scene {
         container.box.setFillStyle(0x00ff00);
       });
       this.scene.correctSelectedWords.push(selectedWord);
+      this.scene.score += this.scene.loadedWordList[selectedWord.toLowerCase()];
     } else if (this.scene.correctSelectedWords.includes(selectedWord)) {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("white");
@@ -157,8 +152,8 @@ export class Game extends Scene {
           )
         ) {
           cell.container.selected = false;
-          cell.text.setColor("black"); // Reset color of letters
-          cell.box.setFillStyle(0xeeeeee); // Reset color of boxes
+          cell.text.setColor("black");
+          cell.box.setFillStyle(0xeeeeee);
         }
       })
     );
@@ -171,8 +166,8 @@ export class Game extends Scene {
         row.forEach((cell) => {
           {
             cell.container.selected = false;
-            cell.text.setColor("black"); // Reset color of letters
-            cell.box.setFillStyle(0xeeeeee); // Reset color of boxes
+            cell.text.setColor("black");
+            cell.box.setFillStyle(0xeeeeee);
           }
         })
       );
@@ -206,8 +201,8 @@ export class Game extends Scene {
       }
 
       if (isValidSelection) {
-        text.setColor("#FFFFFF"); // Change color of letter to indicate selection
-        container.getAt(0).setFillStyle(0x6fa8dc); // Change color of box to indicate selection
+        text.setColor("#FFFFFF");
+        container.getAt(0).setFillStyle(0x6fa8dc);
         container.selected = true;
         this.selectedContainers.push({ container, text, box: container.getAt(0) });
         this.prevSelectionCordinates = [x, y];

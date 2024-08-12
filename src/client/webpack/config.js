@@ -2,6 +2,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     mode: "development",
@@ -46,13 +47,11 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: "./index.html"
-        })/*,
+        }),
         new CopyPlugin({
             patterns: [
-                { from: 'public/assets', to: 'assets' },
-                { from: 'public/favicon.png', to: 'favicon.png' },
-                { from: 'public/style.css', to: 'style.css' }
+                { from: 'assets', to: 'assets' }
             ],
-        }),*/
+        })
     ]
 };
