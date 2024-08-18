@@ -1,4 +1,4 @@
-﻿namespace board_generator;
+﻿namespace Board_Generator;
 
 public record Board(IReadOnlyDictionary<string, double> WordList, List<List<char>> Tiles, Guid Id)
 {

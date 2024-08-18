@@ -1,12 +1,20 @@
 ﻿using Azure.Storage.Blobs;
-using board_generator;
+using Board_Generator;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+
+var config = new ConfigurationBuilder()
+    .AddEnvironmentVariables()
+    .Build();
+
+string? dataConnectionString = config["WOORDAMENT_DATA_CONNECTIONSTRING"];
+string? solverSiteUrl = config["WOORDAMENT_SOLVER_SITE"];
 
 using var driver = new ChromeDriver();
 
-await driver.Navigate().GoToUrlAsync("https://wordament.douile.com/").ConfigureAwait(false);
+await driver.Navigate().GoToUrlAsync(solverSiteUrl).ConfigureAwait(false);
 await Task.Delay(2000);
 
 // TODO: Generate tiles from ChatGPT
@@ -44,11 +52,10 @@ foreach (var row in outputRows)
 
 var board = new Board(words, tiles);
 
-const string connectionString = "YourConnString";
 const string containerName = "boards";
 var blobName = $"{board.Id}.json";
 
-var blobServiceClient = new BlobServiceClient(connectionString);
+var blobServiceClient = new BlobServiceClient(dataConnectionString);
 var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 await containerClient.CreateIfNotExistsAsync();
 var blobClient = containerClient.GetBlobClient(blobName);
