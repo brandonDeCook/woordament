@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import Utils from '../utils';
 import GameService from '../services/gameService';
 
 export class Loading extends Scene {
@@ -23,8 +24,14 @@ export class Loading extends Scene {
             loop: true
         });
 
+        var userId = Utils.generateGUID();
         var gameService = new GameService('https://api20240727112536.azurewebsites.net');
-        gameService.getGameByIdAsync(this.gameCode).then(response => this.startGameScene(response));
+        gameService.updatePlayerByGame({
+            gameId: this.gameCode,
+            id: userId,
+            name: "maybeBrandon",
+            score: 0,
+        }).then(response => this.startGameScene(response));
     }
 
     startGameScene(gameResponse){

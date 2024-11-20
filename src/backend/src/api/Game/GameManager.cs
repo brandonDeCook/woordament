@@ -46,7 +46,7 @@ public class GameManager
         return JsonSerializer.Deserialize<Game>(downloadedGameBlob.Value.Content, GameJsonSerializerOptions.Default);
     }
 
-    public async Task<Game?> UpdatePlayer(string code, Guid? playerId, string name, double score)
+    public async Task<Game?> UpdatePlayer(string code, Guid playerId, string name, double score)
     {
         var game = await GetGame(code).ConfigureAwait(false);
         if (game is null)
@@ -59,7 +59,7 @@ public class GameManager
             .FirstOrDefault(x => x.Player.Id == playerId);
         if (result is null)
         {
-            game.Players.Add(new Player(Guid.NewGuid(), name, PlayerType.GUEST, score));
+            game.Players.Add(new Player(playerId, name, PlayerType.GUEST, score));
         }
         else
         {

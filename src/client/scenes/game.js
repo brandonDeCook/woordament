@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import GameService from '../services/gameService';
 
 export class Game extends Scene {
 
@@ -220,9 +221,9 @@ export class Game extends Scene {
         }`
       );
     } else {
-      // Handle what happens when the timer reaches 0
       this.timerText.setText("Time: 00:00");
-      this.scene.pause(); // Optionally pause the game
+      this.scene.pause();
+      var gameService = new GameService('https://api20240727112536.azurewebsites.net');
     }
   }
 }

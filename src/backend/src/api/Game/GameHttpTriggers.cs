@@ -19,7 +19,7 @@ public class GameHttpTriggers
     [Function(nameof(CreateGame))]
     public async Task<ActionResult> CreateGame([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "games")] HttpRequest request)
     {
-        var createGameRequest = await request.ReadFromJsonAsync<CreateGameRequest>(GameJsonSerializerOptions.Default).ConfigureAwait(false);
+        CreateGameRequest? createGameRequest = await request.ReadFromJsonAsync<CreateGameRequest>(GameJsonSerializerOptions.Default).ConfigureAwait(false);
         return new OkObjectResult(await _gameManager.CreateGame(createGameRequest.HostName).ConfigureAwait(false));
     }
 
@@ -34,16 +34,26 @@ public class GameHttpTriggers
         return new OkObjectResult(game);
     }
 
-    [Function(nameof(UpdatePlayers))]
-    public async Task<ActionResult> UpdatePlayers([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "games/{code}/players")] HttpRequest request, string code)
+    [Function(nameof(UpdateGamePlayers))]
+    public async Task<ActionResult> UpdateGamePlayers(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "games/{code}/players")] HttpRequest request,
+        string code)
     {
-        var updatePlayerRequest = await request.ReadFromJsonAsync<UpdatePlayersRequest>(GameJsonSerializerOptions.Default).ConfigureAwait(false);
-        Game? game = await _gameManager.UpdatePlayer(code, updatePlayerRequest.Id, updatePlayerRequest.Name, updatePlayerRequest.Score)
+        UpdateGamePlayersRequest? updateGamePlayerRequest = await request
+            .ReadFromJsonAsync<UpdateGamePlayersRequest>(GameJsonSerializerOptions.Default).ConfigureAwait(false);
+        if (updateGamePlayerRequest is null)
+        {
+            return new BadRequestResult();
+        }
+
+        Game? game = await _gameManager
+            .UpdatePlayer(code, updateGamePlayerRequest.Id, updateGamePlayerRequest.Name, updateGamePlayerRequest.Score)
             .ConfigureAwait(false);
         if (game is null)
         {
             return new NotFoundResult();
-        }   
+        }
+
         return new OkObjectResult(game);
     }
 }
