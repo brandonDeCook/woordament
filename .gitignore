@@ -396,3 +396,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+src/backend/src/api/Properties/ServiceDependencies/Api20240727112536 - Zip Deploy/profile.arm.json

@@ -24,7 +24,7 @@ export class Loading extends Scene {
             loop: true
         });
 
-        var userId = Utils.generateGUID();
+        var userId = Utils.getPlayerId();
         var gameService = new GameService('https://api20240727112536.azurewebsites.net');
         gameService.updatePlayerByGame({
             gameId: this.gameCode,

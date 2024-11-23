@@ -17,4 +17,14 @@ export default class Utils {
 
     return guid;
   }
+
+  static getPlayerId() {    
+    var playerId = localStorage.getItem('playerId');
+    if (!playerId) {
+      playerId = Utils.generateGUID();
+      localStorage.setItem('playerId', playerId);
+    }
+
+    return playerId;
+  }
 }
