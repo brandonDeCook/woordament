@@ -18,13 +18,38 @@ export default class Utils {
     return guid;
   }
 
-  static getPlayerId() {    
+  static getPlayerFromLocalStorage() {    
     var playerId = localStorage.getItem('playerId');
-    if (!playerId) {
-      playerId = Utils.generateGUID();
-      localStorage.setItem('playerId', playerId);
-    }
+    var playerNickname = localStorage.getItem('playerNickname');
 
-    return playerId;
+    return { id: playerId, nickname: playerNickname };
+  }
+
+  static setPlayerToLocalStorage(playerId, playerNickname) {
+    localStorage.setItem('playerId', playerId);
+    localStorage.setItem('playerNickname', playerNickname);
+  }
+  
+  static generateGameNickname() {
+    const adjectives = [
+        "Speedy", "Silent", "Crazy", "Epic", "Wild", "Dark", "Iron", 
+        "Swift", "Brave", "Fierce"
+    ];
+    const nouns = [
+        "Wolf", "Viper", "Ghost", "Blade", "Ninja", "Beast", "Knight", 
+        "Hawk", "Flame", "Claw"
+    ];
+
+    const validCombinations = [];
+    for (const adj of adjectives) {
+        for (const noun of nouns) {
+            const combination = `${adj}${noun}`;
+            if (combination.length <= 10) {
+                validCombinations.push(combination);
+            }
+        }
+    }
+    
+    return validCombinations[Math.floor(Math.random() * validCombinations.length)];
   }
 }

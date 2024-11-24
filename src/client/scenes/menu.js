@@ -1,82 +1,148 @@
 import { Scene } from 'phaser';
+import Utils from '../utils';
 
 export class Menu extends Scene {
-
     constructor() {
         super('Menu');
+        this.joinGameCodeInput = null;
+        this.nicknameInput = null;
     }
 
     preload() {
-        this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);
+        this.load.plugin(
+            'rexinputtextplugin',
+            'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js',
+            true
+        );
+        this.player = Utils.getPlayerFromLocalStorage();
     }
 
     create() {
-        this.cameras.main.setBackgroundColor('#000000');
+        const COLORS = {
+            background: '#000000',
+            textDefault: '#ffffff',
+            textHover: '#ff0',
+            inputBorder: { code: 'yellow', nickname: 'blue' },
+            inputBackground: 'white',
+            inputFontColor: 'black',
+        };
 
-        this.add.text(this.scale.width / 2, this.scale.height / 4, 'Woo-rdament', {
-            fontSize: '64px',
-            color: '#ffffff',
-        }).setOrigin(0.5);
+        const FONT_SIZES = {
+            title: '64px',
+            button: '32px',
+            input: '24px',
+        };
 
-        const createGameButton = this.add.text(this.scale.width / 2, this.scale.height / 2, 'Create Game', {
-            fontSize: '32px',
-            color: '#ffffff',
-        }).setOrigin(0.5).setInteractive();
+        this.cameras.main.setBackgroundColor(COLORS.background);
 
-        createGameButton.on('pointerover', () => {
-            createGameButton.setStyle({ fill: '#ff0' });
-        });
+        this.addCenteredText(this.scale.height / 4, 'Woo-rdament', FONT_SIZES.title);
 
-        createGameButton.on('pointerout', () => {
-            createGameButton.setStyle({ fill: '#ffffff' });
-        });
+        const createGameButton = this.createButton(
+            this.scale.height / 2,
+            'Create Game',
+            () => {},
+            COLORS
+        );
 
-        createGameButton.on('pointerdown', () => {
-        });
+        const joinGameButtonYpos = createGameButton.y + 50;
+        const joinGameButton = this.createButton(
+            joinGameButtonYpos,
+            'Join Game',
+            this.handleJoinGame.bind(this),
+            COLORS
+        );
 
-        const joinGameButton = this.add.text(this.scale.width / 2, this.scale.height / 1.5, 'Join Game', {
-            fontSize: '32px',
-            color: '#ffffff',
-        }).setOrigin(0.5).setInteractive();
+        const joinGameCodeInputYpos = joinGameButton.y + 40;
+        this.joinGameCodeInput = this.createInputField(
+            joinGameCodeInputYpos,
+            'enter code',
+            COLORS.inputBorder.code,
+            COLORS
+        );
 
-        joinGameButton.on('pointerover', () => {
-            joinGameButton.setStyle({ fill: '#ff0' });
-        });
+        const nicknameButtonYpos = joinGameButton.y + 90;
+        this.addCenteredText(nicknameButtonYpos, 'Nick Name', FONT_SIZES.button);
 
-        joinGameButton.on('pointerout', () => {
-            joinGameButton.setStyle({ fill: '#ffffff' });
-        });
+        const nicknameInputYpos = nicknameButtonYpos + 40;
+        const nicknameDefaultText = this.player.nickname || 'enter name';
+        this.nicknameInput = this.createInputField(
+            nicknameInputYpos,
+            nicknameDefaultText,
+            COLORS.inputBorder.nickname,
+            COLORS
+        );
 
-        joinGameButton.on('pointerdown', () => {
-            if(joinGameCodeInputText.text == '' || joinGameCodeInputText.text == 'enter code'){
-                joinGameCodeInputText.text = '1KPK0';
+        this.setupInputBlur(this.joinGameCodeInput);
+        this.setupInputBlur(this.nicknameInput);
+
+        this.nicknameInput.on('focus', () => {
+            if (this.nicknameInput.text === 'enter name') {
+                this.nicknameInput.text = '';
             }
-            this.scene.stop('Menu');
-            this.scene.start('Loading', { gameCode: joinGameCodeInputText.text });
         });
+    }
 
-        const joinGameCodeInputTextYpos = joinGameButton.y + 50;
+    addCenteredText(y, text, fontSize) {
+        this.add
+            .text(this.scale.width / 2, y, text, { fontSize, color: '#ffffff' })
+            .setOrigin(0.5);
+    }
 
-        var joinGameCodeInputText = this.add.rexInputText(this.scale.width / 2, joinGameCodeInputTextYpos, 140, 40, {
-            type: 'textarea',
-            text: 'enter code',
-            fontSize: '24px',
-            borderColor: 'yellow',
-            backgroundColor: 'white'
-        }).setFontColor('black')
+    createButton(y, text, callback, colors) {
+        const button = this.add
+            .text(this.scale.width / 2, y, text, {
+                fontSize: '32px',
+                color: colors.textDefault,
+            })
             .setOrigin(0.5)
-            .on('focus', function (inputText) {
-                joinGameCodeInputText.text = '';
+            .setInteractive();
+
+        button.on('pointerover', () => button.setStyle({ fill: colors.textHover }));
+        button.on('pointerout', () => button.setStyle({ fill: colors.textDefault }));
+        button.on('pointerdown', callback);
+
+        return button;
+    }
+
+    createInputField(y, placeholder, borderColor, colors) {
+        return this.add
+            .rexInputText(this.scale.width / 2, y, 140, 40, {
+                type: 'textarea',
+                text: placeholder,
+                fontSize: '24px',
+                borderColor,
+                backgroundColor: colors.inputBackground,
+            })
+            .setFontColor(colors.inputFontColor)
+            .setOrigin(0.5)
+            .on('focus', (input) => {
+                if (input.text === placeholder) {
+                    input.text = '';
+                }
             });
+    }
 
-        this.input.on('pointerdown', function () {
-            joinGameCodeInputText.setBlur();
-        });
+    setupInputBlur(input) {
+        this.input.on('pointerdown', () => input.setBlur());
+    }
 
-        joinGameCodeInputText.on('keydown', function (joinGameCodeInputText, e) {
-            if ((joinGameCodeInputText.inputType !== 'textarea') && (e.key === 'Enter')) {
-                joinGameCodeInputText.setBlur();
-            }
-        });
+    handleJoinGame() {
+        if (this.joinGameCodeInput.text === '' || this.joinGameCodeInput.text === 'enter code') {
+            this.joinGameCodeInput.text = '1KPK0';
+        }
+
+        if (this.nicknameInput.text === '' || this.nicknameInput.text === 'enter name') {
+            this.nicknameInput.text = Utils.generateGameNickname();            
+        }
+        this.player.nickname = this.nicknameInput.text;
+
+        if (this.player.id == null) {
+            this.player.id = Utils.generateGUID();
+        }
+
+        Utils.setPlayerToLocalStorage(this.player.id, this.player.nickname);
+
+        this.scene.stop('Menu');
+        this.scene.start('Loading', { gameCode: this.joinGameCodeInput.text, player: this.player });
     }
 }

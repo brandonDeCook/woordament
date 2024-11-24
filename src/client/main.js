@@ -2,6 +2,7 @@ import { Game } from './scenes/game';
 import { Menu } from './scenes/menu';
 import { Loading } from './scenes/loading';
 import AwaitLoaderPlugin from 'phaser3-rex-plugins/plugins/awaitloader-plugin.js';
+import { Leaderboard } from './scenes/leaderboard';
 
 const config = {
     type: Phaser.AUTO,
@@ -19,7 +20,8 @@ const config = {
     scene: [
         Menu,
         Game,
-        Loading
+        Loading,
+        Leaderboard
     ],
     plugins: {
         global: [{

@@ -1,5 +1,4 @@
 import { Scene } from 'phaser';
-import GameService from '../services/gameService';
 
 export class Game extends Scene {
 
@@ -26,7 +25,7 @@ export class Game extends Scene {
     this.selectedContainers = [];
     this.selectedText;
     this.isSelecting = false;
-    this.prevSelectionCordinates = [];
+    this.prevSelectionCoordinates = [];
     this.timerText;
     this.timeRemaining = 90;
     this.score = 0;
@@ -142,7 +141,7 @@ export class Game extends Scene {
 
     // Reset for a new selection
     this.scene.isSelecting = false;
-    this.scene.prevSelectionCordinates = [];
+    this.scene.prevSelectionCoordinates = [];
     this.scene.selectedContainers = [];
     this.scene.grid.forEach((row) =>
       row.forEach((cell) => {
@@ -176,8 +175,8 @@ export class Game extends Scene {
 
     if (this.isSelecting && !container.selected) {
       let isValidSelection = true;
-      if (this.prevSelectionCordinates.length == 2) {
-        const [prevX, prevY] = this.prevSelectionCordinates;
+      if (this.prevSelectionCoordinates.length == 2) {
+        const [prevX, prevY] = this.prevSelectionCoordinates;
 
         const directions = [
           [prevX + 1, prevY], // right
@@ -206,7 +205,7 @@ export class Game extends Scene {
         container.getAt(0).setFillStyle(0x6fa8dc);
         container.selected = true;
         this.selectedContainers.push({ container, text, box: container.getAt(0) });
-        this.prevSelectionCordinates = [x, y];
+        this.prevSelectionCoordinates = [x, y];
       }
     }
   }
@@ -222,8 +221,8 @@ export class Game extends Scene {
       );
     } else {
       this.timerText.setText("Time: 00:00");
-      this.scene.pause();
-      var gameService = new GameService('https://api20240727112536.azurewebsites.net');
+      this.scene.stop();
+      this.scene.start('Leaderboard', { score: this.score });
     }
   }
 }

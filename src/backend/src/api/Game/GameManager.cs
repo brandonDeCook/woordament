@@ -63,8 +63,13 @@ public class GameManager
         }
         else
         {
-            var updatedPlayer = result.Player with { Score = score };
+            var updatedPlayer = result.Player with { Score = score, Name = name };
             game.Players[result.Index] = updatedPlayer;
+        }
+
+        if (!game.Players.Any(x => x.Score <= 0))
+        {
+            game.Status = GameStatus.DONE;
         }
 
         _ = await _gamesBlobContainerClient.GetBlobClient($"{code}.json")

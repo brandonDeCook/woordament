@@ -1,5 +1,4 @@
 import { Scene } from 'phaser';
-import Utils from '../utils';
 import GameService from '../services/gameService';
 
 export class Loading extends Scene {
@@ -9,6 +8,7 @@ export class Loading extends Scene {
 
     init(data){
         this.gameCode = data.gameCode;
+        this.player = data.player;
     }
 
     preload() {
@@ -24,12 +24,11 @@ export class Loading extends Scene {
             loop: true
         });
 
-        var userId = Utils.getPlayerId();
         var gameService = new GameService('https://api20240727112536.azurewebsites.net');
         gameService.updatePlayerByGame({
             gameId: this.gameCode,
-            id: userId,
-            name: "maybeBrandon",
+            id: this.player.id,
+            name: this.player.nickname,
             score: 0,
         }).then(response => this.startGameScene(response));
     }
