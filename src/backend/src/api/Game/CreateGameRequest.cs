@@ -1,3 +1,3 @@
 ﻿namespace Api.Game;
 
-public record CreateGameRequest(string HostName);
+public record CreateGameRequest(Guid HostId, string HostName);

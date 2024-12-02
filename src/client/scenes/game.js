@@ -1,13 +1,13 @@
 import { Scene } from 'phaser';
 
 export class Game extends Scene {
-
   constructor() {
-    super('Game')
+    super('Game');
   }
 
-  init(data){
+  init(data) {
     this.game = data.game;
+    this.player = data.player;
   }
 
   preload() {
@@ -30,28 +30,23 @@ export class Game extends Scene {
     this.timeRemaining = 90;
     this.score = 0;
 
-    // Calculate the starting position to center the grid
     const startX = (this.sys.canvas.width - this.gridSize * cellSize) / 2;
     const startY = (this.sys.canvas.height - this.gridSize * cellSize) / 2;
 
-    // Create the grid of letters
     for (let y = 0; y < this.gridSize; y++) {
       this.grid[y] = [];
       for (let x = 0; x < this.gridSize; x++) {
         const letter = this.loadedGrid[x][y].toUpperCase();
 
-        // Create a container to hold the box and the letter
         const container = this.add.container(
           startX + x * (cellSize + cellBuffer) + cellSize / 2,
           startY + y * (cellSize + cellBuffer) + cellSize / 2
         );
 
-        // Create the box
         const box = this.add.rectangle(0, 0, cellSize, cellSize, 0xeeeeee);
         box.setStrokeStyle(2, 0x000000);
         container.add(box);
 
-        // Create the letter
         const text = this.add.text(0, 0, letter, {
           fontSize: "48px",
           fill: "black",
@@ -67,38 +62,34 @@ export class Game extends Scene {
         container.on("pointerover", () =>
           this.selectBox(container, text, false, x, y)
         );
-        container.on("pointerdown", () => this.selectBox(container, text, true, x, y));
+        container.on("pointerdown", () =>
+          this.selectBox(container, text, true, x, y)
+        );
         this.grid[y][x] = { container, text, box };
       }
     }
 
-    // Text to display selected letters
     this.selectedText = this.add.text(198, 530, "Selected: ", {
       fontSize: "32px",
       fill: "white",
     });
 
-    // Add timer text
     this.timerText = this.add.text(300, 40, "Time: 01:30", {
       fontSize: "32px",
       fill: "#ffffff",
     });
 
-    // Add Score text
     this.scoreText = this.add.text(198, 560, "Points:", {
       fontSize: "32px",
       fill: "#ffffff",
     });
 
-    // Set up timer event to decrement the timer every second
     this.time.addEvent({
       delay: 1000,
-      callback: this.updateTimer,
-      callbackScope: this,
+      callback: this.updateTimer.bind(this),
       loop: true,
     });
 
-    // Input events
     this.input.on("pointerup", this.endSelection);
   }
 
@@ -114,13 +105,11 @@ export class Game extends Scene {
   }
 
   endSelection(pointer) {
-    // Check if the selected letters form a valid word
     let selectedWord = this.scene.getSelectedText();
     if (
       this.scene.loadedWordList.hasOwnProperty(selectedWord.toLowerCase()) &&
       !this.scene.correctSelectedWords.includes(selectedWord)
     ) {
-      // Highlight the selected letters in green if they form a valid word
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("black");
         container.box.setFillStyle(0x00ff00);
@@ -139,7 +128,6 @@ export class Game extends Scene {
       });
     }
 
-    // Reset for a new selection
     this.scene.isSelecting = false;
     this.scene.prevSelectionCoordinates = [];
     this.scene.selectedContainers = [];
@@ -204,7 +192,11 @@ export class Game extends Scene {
         text.setColor("#FFFFFF");
         container.getAt(0).setFillStyle(0x6fa8dc);
         container.selected = true;
-        this.selectedContainers.push({ container, text, box: container.getAt(0) });
+        this.selectedContainers.push({
+          container,
+          text,
+          box: container.getAt(0),
+        });
         this.prevSelectionCoordinates = [x, y];
       }
     }
@@ -216,13 +208,16 @@ export class Game extends Scene {
       let minutes = Math.floor(this.timeRemaining / 60);
       let seconds = this.timeRemaining % 60;
       this.timerText.setText(
-        `Time: ${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds
+        `Time: ${minutes < 10 ? "0" + minutes : minutes}:${
+          seconds < 10 ? "0" + seconds : seconds
         }`
       );
     } else {
       this.timerText.setText("Time: 00:00");
       this.scene.stop();
-      this.scene.start('Leaderboard', { score: this.score });
+      this.player.score =
+        this.score == null || this.score === 0 ? 1 : this.score;
+      this.scene.start("Leaderboard", { player: this.player, game: this.game });
     }
   }
 }

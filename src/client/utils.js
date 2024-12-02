@@ -33,11 +33,13 @@ export default class Utils {
   static generateGameNickname() {
     const adjectives = [
         "Speedy", "Silent", "Crazy", "Epic", "Wild", "Dark", "Iron", 
-        "Swift", "Brave", "Fierce"
+        "Swift", "Brave", "Fierce", "Flappy", "Soft", "Edgey", "Small", 
+        "Hard", "Floppy", "Lit", "Rizz"
     ];
     const nouns = [
         "Wolf", "Viper", "Ghost", "Blade", "Ninja", "Beast", "Knight", 
-        "Hawk", "Flame", "Claw"
+        "Hawk", "Flame", "Claw", "Can", "Cow", "Toad", "Carrot", "Apple",
+        "Bison", "Turnip", "Paul"
     ];
 
     const validCombinations = [];
@@ -49,7 +51,7 @@ export default class Utils {
             }
         }
     }
-    
+
     return validCombinations[Math.floor(Math.random() * validCombinations.length)];
   }
 }

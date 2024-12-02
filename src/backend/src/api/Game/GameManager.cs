@@ -17,7 +17,7 @@ public class GameManager
         _gamesBlobContainerClient = blobServiceClient.GetBlobContainerClient("games");
     }
 
-    public async Task<Game> CreateGame(string hostName)
+    public async Task<Game> CreateGame(string hostName, Guid hostId)
     {
         var board = await _boardManager.GetRandomBoard().ConfigureAwait(false);
 
@@ -25,7 +25,7 @@ public class GameManager
         var code = new string(Enumerable.Repeat(_codeCharacters, 5)
             .Select(s => s[random.Next(s.Length)]).ToArray());
 
-        var game = new Game([new Player(Guid.NewGuid(), hostName, PlayerType.HOST, 0)], GameStatus.WAITING, board, code, Guid.NewGuid());
+        var game = new Game([new Player(hostId, hostName, PlayerType.HOST, 0)], GameStatus.WAITING, board, code, Guid.NewGuid());
 
         _ = await _gamesBlobContainerClient.GetBlobClient($"{code}.json")
             .UploadAsync(BinaryData.FromObjectAsJson(game, GameJsonSerializerOptions.Default), overwrite: true);
@@ -69,7 +69,7 @@ public class GameManager
 
         if (!game.Players.Any(x => x.Score <= 0))
         {
-            game.Status = GameStatus.DONE;
+            game = game with { Status = GameStatus.DONE };
         }
 
         _ = await _gamesBlobContainerClient.GetBlobClient($"{code}.json")

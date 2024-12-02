@@ -40,7 +40,7 @@ export class Menu extends Scene {
         const createGameButton = this.createButton(
             this.scale.height / 2,
             'Create Game',
-            () => {},
+            this.handleCreateGame.bind(this),
             COLORS
         );
 
@@ -126,11 +126,25 @@ export class Menu extends Scene {
         this.input.on('pointerdown', () => input.setBlur());
     }
 
+    handleCreateGame(){
+        this.setupPlayer();
+
+        this.scene.stop('Menu');
+        this.scene.start('Loading', { gameCode: this.joinGameCodeInput.text, player: this.player, buttonClick: "create" });
+    }
+
     handleJoinGame() {
         if (this.joinGameCodeInput.text === '' || this.joinGameCodeInput.text === 'enter code') {
             this.joinGameCodeInput.text = '1KPK0';
         }
 
+        this.setupPlayer();
+
+        this.scene.stop('Menu');
+        this.scene.start('Loading', { gameCode: this.joinGameCodeInput.text, player: this.player, buttonClick: "join" });
+    }
+
+    setupPlayer(){
         if (this.nicknameInput.text === '' || this.nicknameInput.text === 'enter name') {
             this.nicknameInput.text = Utils.generateGameNickname();            
         }
@@ -141,8 +155,5 @@ export class Menu extends Scene {
         }
 
         Utils.setPlayerToLocalStorage(this.player.id, this.player.nickname);
-
-        this.scene.stop('Menu');
-        this.scene.start('Loading', { gameCode: this.joinGameCodeInput.text, player: this.player });
     }
 }

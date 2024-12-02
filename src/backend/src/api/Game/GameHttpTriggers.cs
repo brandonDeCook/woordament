@@ -20,11 +20,16 @@ public class GameHttpTriggers
     public async Task<ActionResult> CreateGame([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "games")] HttpRequest request)
     {
         CreateGameRequest? createGameRequest = await request.ReadFromJsonAsync<CreateGameRequest>(GameJsonSerializerOptions.Default).ConfigureAwait(false);
-        return new OkObjectResult(await _gameManager.CreateGame(createGameRequest.HostName).ConfigureAwait(false));
+        if (createGameRequest is null)
+        {
+            return new BadRequestResult();
+        }
+
+        return new OkObjectResult(await _gameManager.CreateGame(createGameRequest.HostName, createGameRequest.HostId).ConfigureAwait(false));
     }
 
     [Function(nameof(GetGame))]
-    public async Task<ActionResult> GetGame([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "games/{code}")] HttpRequest request, string code)
+    public async Task<ActionResult> GetGame([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "games/{Code}")] HttpRequest request, string code)
     {
         Game? game = await _gameManager.GetGame(code).ConfigureAwait(false);
         if (game is null)
@@ -36,7 +41,7 @@ public class GameHttpTriggers
 
     [Function(nameof(UpdateGamePlayers))]
     public async Task<ActionResult> UpdateGamePlayers(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "games/{code}/players")] HttpRequest request,
+        [HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "games/{Code}/players")] HttpRequest request,
         string code)
     {
         UpdateGamePlayersRequest? updateGamePlayerRequest = await request

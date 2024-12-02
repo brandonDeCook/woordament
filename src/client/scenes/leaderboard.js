@@ -1,44 +1,120 @@
 import { Scene } from 'phaser';
+import GameService from '../services/gameService';
 
 export class Leaderboard extends Scene {
     constructor() {
         super('Leaderboard');
+        this.pollingInterval = 3000;
+        this.pollingDuration = 180000;
+        this.loadingDotCount = 1;
     }
 
-    preload() {
+    init(data) {
+        this.game = data.game;
+        this.player = data.player;
+        this.polling = true;
     }
 
-    create() {
-        const leaderboardData = {
-            "players": [
-                { "id": "cef0c7ae-be71-4ae3-b202-28faf6d7ecb5", "name": "defNotBrandon", "type": "HOST", "score": 9001 },
-                { "id": "1ea7f13e-7e31-4095-8b63-7195e4894a94", "name": "maybeBrandon", "type": "GUEST", "score": 159.0 },
-                { "id": "0b3d4189-29a2-4517-8d07-a3f079269607", "name": "flapBird", "type": "GUEST", "score": 15 },
-                { "id": "93d3f36c-c284-4da9-a4e0-a1d20fc17850", "name": "DarkClaw", "type": "GUEST", "score": 200 },
-                { "id": "b121b406-088b-46fd-8158-de6f21acf977", "name": "DarkViper", "type": "GUEST", "score": 187.5 }
-            ]
-        };
+    preload() {}
 
-        const sortedPlayers = leaderboardData.players
-            .map(player => ({
-                ...player,
-                name: player.name || "Anonymous" 
-            }))
-            .sort((a, b) => b.score - a.score);
+    async create() {
+        this.loadingText = this.add.text(400, 20, "Loading.", {
+            fontSize: "24px",
+            color: "#ffffff",
+        }).setOrigin(0.5);
 
-        this.add.text(400, 50, "Leaderboard", {
+        this.time.addEvent({
+            delay: 500,
+            callback: this.updateLoadingText,
+            callbackScope: this,
+            loop: true,
+        });
+
+        this.titleText = this.add.text(400, 50, "Leaderboard", {
             fontSize: "32px",
             color: "#ffffff",
             fontStyle: "bold",
         }).setOrigin(0.5);
 
-        sortedPlayers.forEach((player, index) => {
+        await this.updatePlayerScore();
+
+        await this.pollForLeaderboardUpdates();
+    }
+
+    updateLoadingText() {
+        if (this.polling) {
+            this.loadingDotCount = (this.loadingDotCount % 3) + 1;
+            const dots = '.'.repeat(this.loadingDotCount);
+            this.loadingText.setText(`Loading${dots}`);
+        }
+    }
+
+    async pollForLeaderboardUpdates() {
+        const gameService = new GameService('https://api20240727112536.azurewebsites.net');
+        const startTime = Date.now();
+
+        const poll = async () => {
+            try {
+                const response = await gameService.getGameByIdAsync(this.game.code);
+
+                this.renderLeaderboard(response.players);
+
+                if (response.status === "DONE") {
+                    this.loadingText.setText("");
+                    this.polling = false;
+                    return;
+                }
+
+                if (Date.now() - startTime < this.pollingDuration && this.polling) {
+                    setTimeout(poll, this.pollingInterval);
+                } else {
+                    this.loadingText.setText("Timeout");
+                }
+            } catch (error) {
+                console.error("Error polling leaderboard updates:", error);
+            }
+        };
+
+        await poll();
+    }
+
+    renderLeaderboard(players) {
+        if (this.leaderboardTexts) {
+            this.leaderboardTexts.forEach(text => text.destroy());
+        }
+
+        const sortedPlayers = players
+            .filter(player => player.score > 0)
+            .map(player => ({
+                ...player,
+                name: player.name || "Anonymous",
+            }))
+            .sort((a, b) => b.score - a.score);
+
+        this.leaderboardTexts = sortedPlayers.map((player, index) => {
             const rank = index + 1;
             const displayText = `${rank}. ${player.name} - ${player.score}`;
-            this.add.text(200, 100 + index * 30, displayText, {
+            return this.add.text(200, 100 + index * 30, displayText, {
                 fontSize: "24px",
                 color: "#ffffff",
             });
         });
+    }
+
+    async updatePlayerScore() {
+        try {
+            const gameService = new GameService('https://api20240727112536.azurewebsites.net');
+            const response = await gameService.updatePlayerByGame({
+                gameId: this.game.code,
+                id: this.player.id,
+                name: this.player.nickname,
+                score: this.player.score,
+            });
+
+            return response.players;
+        } catch (error) {
+            console.error("Failed to update player score:", error);
+            return [];
+        }
     }
 }
