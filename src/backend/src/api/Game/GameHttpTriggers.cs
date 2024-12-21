@@ -25,13 +25,25 @@ public class GameHttpTriggers
             return new BadRequestResult();
         }
 
-        return new OkObjectResult(await _gameManager.CreateGame(createGameRequest.HostName, createGameRequest.HostId).ConfigureAwait(false));
+        return new OkObjectResult(await _gameManager.Create(createGameRequest.HostName, createGameRequest.HostId).ConfigureAwait(false));
+    }
+
+    [Function(nameof(UpdateGame))]
+    public async Task<ActionResult> UpdateGame([HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "games/{Code}")] HttpRequest request, string code)
+    {
+        UpdateGameRequest? updateGameRequest = await request.ReadFromJsonAsync<UpdateGameRequest>(GameJsonSerializerOptions.Default).ConfigureAwait(false);
+        if (updateGameRequest is null)
+        {
+            return new BadRequestResult();
+        }
+
+        return new OkObjectResult(await _gameManager.Update(updateGameRequest.Status, code).ConfigureAwait(false));
     }
 
     [Function(nameof(GetGame))]
     public async Task<ActionResult> GetGame([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "games/{Code}")] HttpRequest request, string code)
     {
-        Game? game = await _gameManager.GetGame(code).ConfigureAwait(false);
+        Game? game = await _gameManager.Get(code).ConfigureAwait(false);
         if (game is null)
         {
             return new NotFoundResult();

@@ -17,7 +17,7 @@ public class GameManager
         _gamesBlobContainerClient = blobServiceClient.GetBlobContainerClient("games");
     }
 
-    public async Task<Game> CreateGame(string hostName, Guid hostId)
+    public async Task<Game> Create(string hostName, Guid hostId)
     {
         var board = await _boardManager.GetRandomBoard().ConfigureAwait(false);
 
@@ -33,7 +33,27 @@ public class GameManager
         return game;
     }
 
-    public async Task<Game?> GetGame(string code)
+    public async Task<Game?> Update(GameStatus status, string code)
+    {
+        var game = await Get(code).ConfigureAwait(false);
+        if (game is null)
+        {
+            return null;
+        }
+
+        if (game.Status is GameStatus.WAITING && status is GameStatus.IN_PROGRESS)
+        {
+            var updatedGame = game with { Status = status };
+            _ = await _gamesBlobContainerClient.GetBlobClient($"{code}.json")
+                .UploadAsync(BinaryData.FromObjectAsJson(game, GameJsonSerializerOptions.Default), overwrite: true);
+
+            return updatedGame;
+        }
+
+        throw new ArgumentException("Invalid Game state change");
+    }
+
+    public async Task<Game?> Get(string code)
     {
         var blobClient = _gamesBlobContainerClient.GetBlobClient($"{code}.json");
         if (!await blobClient.ExistsAsync().ConfigureAwait(false))
@@ -48,7 +68,7 @@ public class GameManager
 
     public async Task<Game?> UpdatePlayer(string code, Guid playerId, string name, double score)
     {
-        var game = await GetGame(code).ConfigureAwait(false);
+        var game = await Get(code).ConfigureAwait(false);
         if (game is null)
         {
             return null;

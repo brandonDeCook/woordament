@@ -107,4 +107,32 @@ export default class GameService {
             throw error;
         }
     }
+
+    async updateGame(updateGameRequest) {
+        const url = `${this.baseURL}/api/games`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateGameRequest),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const players = data.players.map(player => new Player(player.id, player.name, player.type, player.score));
+            const board = new Board(data.board.wordList, data.board.tiles, data.board.id);
+            const gameResponse = new GameResponse(players, data.status, board, data.code, data.id);
+
+            return gameResponse;
+        } catch (error) {
+            console.error('Error updating game:', error);
+            throw error;
+        }
+    }
 }

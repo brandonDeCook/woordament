@@ -99,7 +99,7 @@ export class Loading extends Scene {
 
     startGame() {
         if (this.pollingTimer) {
-            this.pollingTimer.remove(); // Stop polling
+            this.pollingTimer.remove();
         }
         this.gameService.getGameByIdAsync(this.gameCode)
             .then(gameResponse => {
