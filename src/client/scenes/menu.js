@@ -15,6 +15,7 @@ export class Menu extends Scene {
             true
         );
         this.player = Utils.getPlayerFromLocalStorage();
+        this.load.audio('buttonSelect', 'assets/sounds/buttonSelect.wav');
     }
 
     create() {
@@ -129,6 +130,7 @@ export class Menu extends Scene {
     handleCreateGame(){
         this.setupPlayer();
 
+        this.sound.play('buttonSelect');
         this.scene.stop('Menu');
         this.scene.start('Loading', { gameCode: this.joinGameCodeInput.text, player: this.player, buttonClick: "create" });
     }
@@ -140,6 +142,7 @@ export class Menu extends Scene {
 
         this.setupPlayer();
 
+        this.sound.play('buttonSelect');
         this.scene.stop('Menu');
         this.scene.start('Loading', { gameCode: this.joinGameCodeInput.text, player: this.player, buttonClick: "join" });
     }

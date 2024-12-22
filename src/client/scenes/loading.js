@@ -32,6 +32,10 @@ export class Loading extends Scene {
         } else {
             this.updatePlayerAndStartGame();
         }
+
+        this.load.audio('tileSelect', 'assets/sounds/tileSelect.wav');
+        this.load.audio('wordSuccess', 'assets/sounds/wordSuccess.wav');
+        this.load.audio('wordFail', 'assets/sounds/wordFail.wav');
     }
 
     async createGameAndPoll() {

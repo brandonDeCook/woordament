@@ -112,20 +112,23 @@ export class Game extends Scene {
     ) {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("black");
-        container.box.setFillStyle(0x00ff00);
+        container.box.setFillStyle(0x00ff00);        
       });
       this.scene.correctSelectedWords.push(selectedWord);
       this.scene.score += this.scene.loadedWordList[selectedWord.toLowerCase()];
+      this.scene.sound.play('wordSuccess');
     } else if (this.scene.correctSelectedWords.includes(selectedWord)) {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("white");
         container.box.setFillStyle(0xffcc00);
       });
+      this.scene.sound.play('wordFail');
     } else {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("white");
         container.box.setFillStyle(0xff0000);
       });
+      this.scene.sound.play('wordFail');
     }
 
     this.scene.isSelecting = false;
@@ -199,6 +202,7 @@ export class Game extends Scene {
         });
         this.prevSelectionCoordinates = [x, y];
       }
+      this.sound.play('tileSelect');
     }
   }
 
