@@ -17,7 +17,7 @@ export class Game extends Scene {
 
   create() {
     const cellSize = 100;
-    const cellBuffer = 10;
+    const cellBuffer = 15;
 
     this.gridSize = 4;
     this.grid = [];
@@ -31,7 +31,7 @@ export class Game extends Scene {
     this.score = 0;
 
     const startX = (this.sys.canvas.width - this.gridSize * cellSize) / 2;
-    const startY = (this.sys.canvas.height - this.gridSize * cellSize) / 2;
+    const startY = (this.sys.canvas.height - this.gridSize * cellSize) / 2 - 20;
 
     for (let y = 0; y < this.gridSize; y++) {
       this.grid[y] = [];
@@ -69,7 +69,7 @@ export class Game extends Scene {
       }
     }
 
-    this.selectedText = this.add.text(198, 530, "Selected: ", {
+    this.selectedText = this.add.text(198, 525, "Selected: ", {
       fontSize: "32px",
       fill: "white",
     });
@@ -79,9 +79,9 @@ export class Game extends Scene {
       fill: "#ffffff",
     });
 
-    this.scoreText = this.add.text(198, 560, "Points:", {
+    this.scoreText = this.add.text(198, 555, "Points:", {
       fontSize: "32px",
-      fill: "#ffffff",
+      fill: "#ffffff"
     });
 
     this.time.addEvent({

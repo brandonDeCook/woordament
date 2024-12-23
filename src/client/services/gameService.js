@@ -30,7 +30,7 @@ export default class GameService {
         this.baseURL = baseURL;
     }
 
-    async getGameByIdAsync(gameId) {
+    async get(gameId) {
         const url = `${this.baseURL}/api/games/${gameId}`;
     
         try {
@@ -52,7 +52,7 @@ export default class GameService {
         }
     }
 
-    async updatePlayerByGame(updatePlayerByGameRequest) {
+    async updatePlayers(updatePlayerByGameRequest) {
         const url = `${this.baseURL}/api/games/${updatePlayerByGameRequest.gameId}/players`;
         
         try {
@@ -80,7 +80,7 @@ export default class GameService {
         }
     }
 
-    async createGame(hostId, hostName) {
+    async create(hostId, hostName) {
         const url = `${this.baseURL}/api/games`;
 
         try {
@@ -108,8 +108,8 @@ export default class GameService {
         }
     }
 
-    async updateGame(updateGameRequest) {
-        const url = `${this.baseURL}/api/games`;
+    async update(updateGameRequest, gameCode) {
+        const url = `${this.baseURL}/api/games/${gameCode}`;
 
         try {
             const response = await fetch(url, {

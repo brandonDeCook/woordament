@@ -55,7 +55,7 @@ export class Leaderboard extends Scene {
 
         const poll = async () => {
             try {
-                const response = await gameService.getGameByIdAsync(this.game.code);
+                const response = await gameService.get(this.game.code);
 
                 this.renderLeaderboard(response.players);
 
@@ -104,7 +104,7 @@ export class Leaderboard extends Scene {
     async updatePlayerScore() {
         try {
             const gameService = new GameService('https://api20240727112536.azurewebsites.net');
-            const response = await gameService.updatePlayerByGame({
+            const response = await gameService.updatePlayers({
                 gameId: this.game.code,
                 id: this.player.id,
                 name: this.player.nickname,

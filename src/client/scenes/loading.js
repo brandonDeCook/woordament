@@ -30,23 +30,25 @@ export class Loading extends Scene {
         if (this.isCreateGame) {
             this.createGameAndPoll();
         } else {
-            this.updatePlayerAndStartGame();
+            this.updatePlayerAndPoll();
         }
 
         this.load.audio('tileSelect', 'assets/sounds/tileSelect.wav');
         this.load.audio('wordSuccess', 'assets/sounds/wordSuccess.wav');
         this.load.audio('wordFail', 'assets/sounds/wordFail.wav');
+        this.load.audio('buttonSelect2', 'assets/sounds/buttonSelect2.wav');
     }
 
     async createGameAndPoll() {
         try {
-            var response = await this.gameService.createGame(this.player.id, this.player.nickname);
+            const response = await this.gameService.create(this.player.id, this.player.nickname);
             this.gameCode = response.code;
+            
             this.pollingTimer = this.time.addEvent({
                 delay: 3000,
                 callback: async () => {
                     try {
-                        const gameData = await this.gameService.getGameByIdAsync(this.gameCode);
+                        const gameData = await this.gameService.get(this.gameCode);
                         this.renderPlayers(gameData.players);
                     } catch (error) {
                         console.error('Error fetching game data:', error);
@@ -65,7 +67,20 @@ export class Loading extends Scene {
             .setOrigin(0.5)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
-                this.startGame();
+                this.gameService.update({status: 'IN_PROGRESS'}, this.gameCode)
+                    .then(gameResponse => {
+                        this.startGameScene(gameResponse);
+                    })
+                    .catch(error => {
+                        console.error('Error starting game:', error);
+                    });
+            });
+
+            this.gameCodeText = this.add.text(this.startButton.x - 105, this.startButton.y - 55, 'Code: ' + response.code, {
+                fontSize: '28px',
+                color: '#FFFFFF',
+                backgroundColor: '#000000',
+                padding: { x: 10, y: 5 }
             });
 
         } catch (error) {
@@ -73,13 +88,50 @@ export class Loading extends Scene {
         }
     }
 
-    updatePlayerAndStartGame() {
-        this.gameService.updatePlayerByGame({
-            gameId: this.gameCode,
-            id: this.player.id,
-            name: this.player.nickname,
-            score: 0,
-        }).then(response => this.startGameScene(response));
+    async updatePlayerAndPoll() {
+        try {
+            await this.gameService.updatePlayers({
+                gameId: this.gameCode,
+                id: this.player.id,
+                name: this.player.nickname,
+                score: 0,
+            });
+
+            this.pollingTimer = this.time.addEvent({
+                delay: 3000,
+                callback: async () => {
+                    try {
+                        const gameData = await this.gameService.get(this.gameCode);
+
+                        if (gameData.status === 'IN_PROGRESS') {
+                        this.gameService.get(this.gameCode)
+                            .then(gameResponse => {
+                                this.startGameScene(gameResponse);
+                            })
+                            .catch(error => {
+                                console.error('Error starting game:', error);
+                            });
+                        }
+                        else if(gameData.status == 'DONE') {
+                            this.pollingTimer.remove();
+                            this.errorText = this.add.text(this.scale.width / 2 - 200, this.scale.height / 2, 'Unable to join this game', {
+                                fontSize: '28px',
+                                color: '#ff0000',
+                                backgroundColor: '#000000',
+                                padding: { x: 10, y: 5 }
+                            });
+                            console.log('Game: ' + gameData.code + ' is currently in state of DONE and cannot be joined');
+                        }
+                    } catch (error) {
+                        console.error('Error fetching game data:', error);
+                    }
+                },
+                callbackScope: this,
+                loop: true
+            });
+        } catch (error) {
+            console.error('Error updating player:', error);
+        }
     }
 
     renderPlayers(players) {
@@ -101,20 +153,11 @@ export class Loading extends Scene {
         });
     }
 
-    startGame() {
+    startGameScene(gameResponse) {
         if (this.pollingTimer) {
             this.pollingTimer.remove();
         }
-        this.gameService.getGameByIdAsync(this.gameCode)
-            .then(gameResponse => {
-                this.startGameScene(gameResponse);
-            })
-            .catch(error => {
-                console.error('Error starting game:', error);
-            });
-    }
-
-    startGameScene(gameResponse) {
+        this.sound.play('buttonSelect2');
         this.scene.stop('Loading');
         this.scene.start('Game', { game: gameResponse, player: this.player });
     }
