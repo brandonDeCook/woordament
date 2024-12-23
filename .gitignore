@@ -403,3 +403,4 @@ node_modules/
 
 # Build output
 dist/
+/src/backend/src/api/local.settings.json

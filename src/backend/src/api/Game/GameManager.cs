@@ -45,7 +45,7 @@ public class GameManager
         {
             var updatedGame = game with { Status = status };
             _ = await _gamesBlobContainerClient.GetBlobClient($"{code}.json")
-                .UploadAsync(BinaryData.FromObjectAsJson(game, GameJsonSerializerOptions.Default), overwrite: true);
+                .UploadAsync(BinaryData.FromObjectAsJson(updatedGame, GameJsonSerializerOptions.Default), overwrite: true);
 
             return updatedGame;
         }
