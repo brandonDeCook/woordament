@@ -73,6 +73,12 @@ export class Menu extends Scene {
             COLORS
         );
 
+        this.nicknameInput.on('textchange', () => {
+            if (this.nicknameInput.text.length > 9) {
+                this.nicknameInput.text = this.nicknameInput.text.slice(0, 9);
+            }
+        });
+
         this.setupInputBlur(this.joinGameCodeInput);
         this.setupInputBlur(this.nicknameInput);
 

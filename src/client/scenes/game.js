@@ -17,7 +17,7 @@ export class Game extends Scene {
 
   create() {
     const cellSize = 100;
-    const cellBuffer = 15;
+    const cellBuffer = 17;
 
     this.gridSize = 4;
     this.grid = [];
@@ -69,7 +69,7 @@ export class Game extends Scene {
       }
     }
 
-    this.selectedText = this.add.text(198, 525, "Selected: ", {
+    this.selectedText = this.add.text(198, 527, "Selected: ", {
       fontSize: "32px",
       fill: "white",
     });
@@ -79,7 +79,7 @@ export class Game extends Scene {
       fill: "#ffffff",
     });
 
-    this.scoreText = this.add.text(198, 555, "Points:", {
+    this.scoreText = this.add.text(198, 557, "Points:", {
       fontSize: "32px",
       fill: "#ffffff"
     });
