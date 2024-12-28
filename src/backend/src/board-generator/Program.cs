@@ -21,10 +21,10 @@ await Task.Delay(2000);
 
 var tiles = new List<List<char>>()
 {
-    new() { 'u', 'y', 'g', 'r' },
-    new() { 'c', 's', 'n', 'e' },
-    new() { 'r', 'a', 's', 'n' },
-    new() { 'g', 'a', 't', 's' }
+    new() { 'p', 'e', 'c', 'a' },
+    new() { 's', 'l', 'r', 'l' },
+    new() { 'u', 'o', 'u', 'y' },
+    new() { 'o', 'h', 'b', 'j' }
 };
 
 for (var i = 1; i <= 16; i++)

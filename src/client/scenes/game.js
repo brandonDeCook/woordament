@@ -17,7 +17,7 @@ export class Game extends Scene {
 
   create() {
     const cellSize = 100;
-    const cellBuffer = 17;
+    const cellBuffer = 10;
 
     this.gridSize = 4;
     this.grid = [];
@@ -37,39 +37,45 @@ export class Game extends Scene {
       this.grid[y] = [];
       for (let x = 0; x < this.gridSize; x++) {
         const letter = this.loadedGrid[x][y].toUpperCase();
-
+    
         const container = this.add.container(
           startX + x * (cellSize + cellBuffer) + cellSize / 2,
           startY + y * (cellSize + cellBuffer) + cellSize / 2
         );
-
+    
         const box = this.add.rectangle(0, 0, cellSize, cellSize, 0xeeeeee);
         box.setStrokeStyle(2, 0x000000);
         container.add(box);
-
+    
+        const circle = this.add.circle(0, 0, (cellSize / 2) - 8, 0xffffff);
+        circle.setAlpha(0.01);
+        circle.setInteractive();
+        container.add(circle);
+    
         const text = this.add.text(0, 0, letter, {
           fontSize: "48px",
           fill: "black",
         });
         text.setOrigin(0.5, 0.5);
         container.add(text);
-
+    
         container.setSize(cellSize, cellSize);
-        container.setInteractive();
         container.selected = false;
         container.id = x.toString() + y.toString();
         container.letter = letter;
-        container.on("pointerover", () =>
+
+        circle.on("pointerover", () =>
           this.selectBox(container, text, false, x, y)
         );
-        container.on("pointerdown", () =>
+        circle.on("pointerdown", () =>
           this.selectBox(container, text, true, x, y)
         );
+    
         this.grid[y][x] = { container, text, box };
       }
-    }
+    }    
 
-    this.selectedText = this.add.text(198, 527, "Selected: ", {
+    this.selectedText = this.add.text(198, 520, "Selected: ", {
       fontSize: "32px",
       fill: "white",
     });
@@ -79,7 +85,7 @@ export class Game extends Scene {
       fill: "#ffffff",
     });
 
-    this.scoreText = this.add.text(198, 557, "Points:", {
+    this.scoreText = this.add.text(198, 550, "Points:", {
       fontSize: "32px",
       fill: "#ffffff"
     });
