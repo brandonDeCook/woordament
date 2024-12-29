@@ -120,17 +120,17 @@ export class Game extends Scene {
         fill: "white",
       });
     } else {
-      this.selectedText = this.add.text(38, height - 220, "Selected: ", {
+      this.selectedText = this.add.text(startX, startY + 314, "Selected: ", {
         fontSize: "18px",
         fill: "white",
       });
 
-      this.timerText = this.add.text(100, height - 476, "Time: 01:30", {
+      this.timerText = this.add.text(startX + 94, startY - 20, "Time: 01:30", {
         fontSize: "18px",
         fill: "white",
       });
 
-      this.scoreText = this.add.text(38, height - 200, "Score:", {
+      this.scoreText = this.add.text(startX, startY + 334, "Score:", {
         fontSize: "18px",
         fill: "white",
       });
