@@ -1,8 +1,8 @@
-import { Scene } from 'phaser';
+import { Scene } from "phaser";
 
 export class Game extends Scene {
   constructor() {
-    super('Game');
+    super("Game");
   }
 
   init(data) {
@@ -16,49 +16,78 @@ export class Game extends Scene {
   }
 
   create() {
-    const cellSize = 100;
-    const cellBuffer = 10;
+    const isMobile =
+      this.sys.game.device.os.android ||
+      this.sys.game.device.os.iOS ||
+      this.sys.game.device.os.iPad ||
+      this.sys.game.device.os.iPhone;
 
+    const width = this.sys.canvas.width;
+    const height = this.sys.canvas.height;
     this.gridSize = 4;
+
+    const uiMargin = 80;
+    const usableWidth = width - uiMargin;
+    const usableHeight = height - uiMargin;
+    const cellBuffer = 5;
+    const maxCellSizeHoriz =
+      (usableWidth - cellBuffer * (this.gridSize - 1)) / this.gridSize;
+    const maxCellSizeVert =
+      (usableHeight - cellBuffer * (this.gridSize - 1)) / this.gridSize;
+
+    const cellSize = Math.min(maxCellSizeHoriz, maxCellSizeVert);
+
     this.grid = [];
     this.correctSelectedWords = [];
     this.selectedContainers = [];
-    this.selectedText;
+    this.selectedText = null;
     this.isSelecting = false;
     this.prevSelectionCoordinates = [];
-    this.timerText;
+    this.timerText = null;
     this.timeRemaining = 90;
     this.score = 0;
 
-    const startX = (this.sys.canvas.width - this.gridSize * cellSize) / 2;
-    const startY = (this.sys.canvas.height - this.gridSize * cellSize) / 2 - 20;
+    const totalGridWidth =
+      this.gridSize * cellSize + cellBuffer * (this.gridSize - 1);
+    const totalGridHeight =
+      this.gridSize * cellSize + cellBuffer * (this.gridSize - 1);
+
+    const startX = (width - totalGridWidth) / 2;
+    const startY = (height - totalGridHeight) / 2;
 
     for (let y = 0; y < this.gridSize; y++) {
       this.grid[y] = [];
       for (let x = 0; x < this.gridSize; x++) {
         const letter = this.loadedGrid[x][y].toUpperCase();
-    
+
         const container = this.add.container(
-          startX + x * (cellSize + cellBuffer) + cellSize / 2,
-          startY + y * (cellSize + cellBuffer) + cellSize / 2
+          startX + x * (cellSize + cellBuffer),
+          startY + y * (cellSize + cellBuffer)
         );
-    
+
         const box = this.add.rectangle(0, 0, cellSize, cellSize, 0xeeeeee);
         box.setStrokeStyle(2, 0x000000);
+        box.setOrigin(0);
         container.add(box);
-    
-        const circle = this.add.circle(0, 0, (cellSize / 2) - 8, 0xffffff);
+
+        const circleRadius = cellSize / 2 - 8;
+        const circle = this.add.circle(
+          cellSize / 2,
+          cellSize / 2,
+          circleRadius,
+          0xffffff
+        );
         circle.setAlpha(0.01);
         circle.setInteractive();
         container.add(circle);
-    
-        const text = this.add.text(0, 0, letter, {
-          fontSize: "48px",
+
+        const text = this.add.text(cellSize / 2, cellSize / 2, letter, {
+          fontSize: isMobile ? Math.floor(cellSize / 2) + "px" : "44px",
           fill: "black",
         });
-        text.setOrigin(0.5, 0.5);
+        text.setOrigin(0.5);
         container.add(text);
-    
+
         container.setSize(cellSize, cellSize);
         container.selected = false;
         container.id = x.toString() + y.toString();
@@ -70,25 +99,42 @@ export class Game extends Scene {
         circle.on("pointerdown", () =>
           this.selectBox(container, text, true, x, y)
         );
-    
+
         this.grid[y][x] = { container, text, box };
       }
-    }    
+    }
 
-    this.selectedText = this.add.text(198, 520, "Selected: ", {
-      fontSize: "32px",
-      fill: "white",
-    });
+    if (!isMobile) {
+      this.selectedText = this.add.text(138, height - 30, "Selected: ", {
+        fontSize: "26px",
+        fill: "white",
+      });
 
-    this.timerText = this.add.text(300, 40, "Time: 01:30", {
-      fontSize: "32px",
-      fill: "#ffffff",
-    });
+      this.timerText = this.add.text(324, height - 590, "Time: 01:30", {
+        fontSize: "26px",
+        fill: "white",
+      });
 
-    this.scoreText = this.add.text(198, 550, "Points:", {
-      fontSize: "32px",
-      fill: "#ffffff"
-    });
+      this.scoreText = this.add.text(500, height - 30, "Score:", {
+        fontSize: "26px",
+        fill: "white",
+      });
+    } else {
+      this.selectedText = this.add.text(38, height - 220, "Selected: ", {
+        fontSize: "18px",
+        fill: "white",
+      });
+
+      this.timerText = this.add.text(100, height - 476, "Time: 01:30", {
+        fontSize: "18px",
+        fill: "white",
+      });
+
+      this.scoreText = this.add.text(38, height - 200, "Score:", {
+        fontSize: "18px",
+        fill: "white",
+      });
+    }
 
     this.time.addEvent({
       delay: 1000,
@@ -100,8 +146,8 @@ export class Game extends Scene {
   }
 
   update() {
-    this.selectedText.setText("Selected: " + this.getSelectedText());
-    this.scoreText.setText("Score: " + this.score);
+    this.selectedText.setText("Selected:" + this.getSelectedText());
+    this.scoreText.setText("Score:" + this.score);
   }
 
   getSelectedText() {
@@ -118,23 +164,23 @@ export class Game extends Scene {
     ) {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("black");
-        container.box.setFillStyle(0x00ff00);        
+        container.box.setFillStyle(0x00ff00);
       });
       this.scene.correctSelectedWords.push(selectedWord);
       this.scene.score += this.scene.loadedWordList[selectedWord.toLowerCase()];
-      this.scene.sound.play('wordSuccess');
+      this.scene.sound.play("wordSuccess");
     } else if (this.scene.correctSelectedWords.includes(selectedWord)) {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("white");
         container.box.setFillStyle(0xffcc00);
       });
-      this.scene.sound.play('wordFail');
+      this.scene.sound.play("wordFail");
     } else {
       this.scene.selectedContainers.forEach((container) => {
         container.text.setColor("white");
         container.box.setFillStyle(0xff0000);
       });
-      this.scene.sound.play('wordFail');
+      this.scene.sound.play("wordFail");
     }
 
     this.scene.isSelecting = false;
@@ -161,11 +207,9 @@ export class Game extends Scene {
       this.isSelecting = true;
       this.grid.forEach((row) =>
         row.forEach((cell) => {
-          {
-            cell.container.selected = false;
-            cell.text.setColor("black");
-            cell.box.setFillStyle(0xeeeeee);
-          }
+          cell.container.selected = false;
+          cell.text.setColor("black");
+          cell.box.setFillStyle(0xeeeeee);
         })
       );
     }
@@ -208,7 +252,7 @@ export class Game extends Scene {
         });
         this.prevSelectionCoordinates = [x, y];
       }
-      this.sound.play('tileSelect');
+      this.sound.play("tileSelect");
     }
   }
 
