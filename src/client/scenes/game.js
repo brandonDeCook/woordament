@@ -83,6 +83,7 @@ export class Game extends Scene {
 
         const text = this.add.text(cellSize / 2, cellSize / 2, letter, {
           fontSize: isMobile ? Math.floor(cellSize / 2) + "px" : "44px",
+          fontFamily: 'standard',
           fill: "black",
         });
         text.setOrigin(0.5);
@@ -106,32 +107,38 @@ export class Game extends Scene {
 
     if (!isMobile) {
       this.selectedText = this.add.text(138, height - 30, "Selected: ", {
-        fontSize: "26px",
+        fontSize: "20px",
+        fontFamily: 'standard',
         fill: "white",
       });
 
-      this.timerText = this.add.text(324, height - 590, "Time: 01:30", {
+      this.timerText = this.add.text(254, height - 590, "Time: 01:30", {
         fontSize: "26px",
+        fontFamily: 'standard',
         fill: "white",
       });
 
       this.scoreText = this.add.text(500, height - 30, "Score:", {
-        fontSize: "26px",
+        fontSize: "20px",
+        fontFamily: 'standard',
         fill: "white",
       });
     } else {
       this.selectedText = this.add.text(startX, startY + 314, "Selected: ", {
         fontSize: "18px",
+        fontFamily: 'standard',
         fill: "white",
       });
 
-      this.timerText = this.add.text(startX + 94, startY - 20, "Time: 01:30", {
+      this.timerText = this.add.text(startX + 60, startY - 20, "Time: 01:30", {
         fontSize: "18px",
+        fontFamily: 'standard',
         fill: "white",
       });
 
       this.scoreText = this.add.text(startX, startY + 334, "Score:", {
         fontSize: "18px",
+        fontFamily: 'standard',
         fill: "white",
       });
     }

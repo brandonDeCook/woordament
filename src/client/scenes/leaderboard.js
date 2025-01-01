@@ -26,6 +26,7 @@ export class Leaderboard extends Scene {
     this.loadingText = this.add
       .text(width / 2, height * 0.05, "Loading.", {
         fontSize: `${baseFontSize}px`,
+        fontFamily: 'standard',
         color: "#ffffff",
       })
       .setOrigin(0.5);
@@ -40,6 +41,7 @@ export class Leaderboard extends Scene {
     this.titleText = this.add
       .text(width / 2, height * 0.12, "Leaderboard", {
         fontSize: `${titleFontSize}px`,
+        fontFamily: 'standard',
         color: "#ffffff",
         fontStyle: "bold",
       })
@@ -111,6 +113,7 @@ export class Leaderboard extends Scene {
       return this.add
         .text(width * 0.5, listStartY + index * lineHeight, displayText, {
           fontSize: `${fontSize}px`,
+          fontFamily: 'standard',
           color: "#ffffff",
         })
         .setOrigin(0.5, 0);

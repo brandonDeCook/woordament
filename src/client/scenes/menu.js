@@ -35,7 +35,7 @@ export class Menu extends Scene {
     };
 
     const FONT_SIZES = {
-      title: isMobile ? "44px" : "64px",
+      title: isMobile ? "100px" : "200px",
       button: "32px",
       input: "24px",
     };
@@ -45,7 +45,8 @@ export class Menu extends Scene {
     this.addCenteredText(
       isMobile ? this.scale.height / 3 : this.scale.height / 4,
       "Woo-rdament",
-      FONT_SIZES.title
+      FONT_SIZES.title, 
+      "title"
     );
 
     const createGameButton = this.createButton(
@@ -72,7 +73,7 @@ export class Menu extends Scene {
     );
 
     const nicknameButtonYpos = joinGameButton.y + 90;
-    this.addCenteredText(nicknameButtonYpos, "Nick Name", FONT_SIZES.button);
+    this.addCenteredText(nicknameButtonYpos, "Nick Name", FONT_SIZES.button, "standard");
 
     const nicknameInputYpos = nicknameButtonYpos + 40;
     const nicknameDefaultText = this.player.nickname || "enter name";
@@ -99,15 +100,16 @@ export class Menu extends Scene {
     });
   }
 
-  addCenteredText(y, text, fontSize) {
+  addCenteredText(y, text, fontSize, fontFamily) {
     this.add
-      .text(this.scale.width / 2, y, text, { fontSize, color: "#ffffff" })
+      .text(this.scale.width / 2, y, text, { fontSize, color: "#ffffff", fontFamily: fontFamily })
       .setOrigin(0.5);
   }
 
   createButton(y, text, callback, colors) {
     const button = this.add
       .text(this.scale.width / 2, y, text, {
+        fontFamily: "standard",
         fontSize: "32px",
         color: colors.textDefault,
       })
@@ -125,10 +127,11 @@ export class Menu extends Scene {
 
   createInputField(y, placeholder, borderColor, colors) {
     return this.add
-      .rexInputText(this.scale.width / 2, y, 140, 40, {
+      .rexInputText(this.scale.width / 2, y, 184, 28, {
         type: "textarea",
         text: placeholder,
-        fontSize: "24px",
+        fontSize: "18px",
+        fontFamily: "standard",
         borderColor,
         backgroundColor: colors.inputBackground,
       })

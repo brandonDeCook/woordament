@@ -16,6 +16,7 @@ export class Loading extends Scene {
     preload() {
         this.loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 50, this.isCreateGame ? 'Waiting' : 'Loading', {
             fontSize: '32px',
+            fontFamily: 'standard',
             color: '#ffffff',
         }).setOrigin(0.5);
 
@@ -60,6 +61,7 @@ export class Loading extends Scene {
 
             this.startButton = this.add.text(this.scale.width / 2, this.scale.height / 2 + 50, 'Start', {
                 fontSize: '28px',
+                fontFamily: 'standard',
                 color: '#00ff00',
                 backgroundColor: '#000000',
                 padding: { x: 10, y: 5 }
@@ -76,8 +78,9 @@ export class Loading extends Scene {
                     });
             });
 
-            this.gameCodeText = this.add.text(this.startButton.x - 105, this.startButton.y - 55, 'Code: ' + response.code, {
+            this.gameCodeText = this.add.text(this.startButton.x - 170, this.startButton.y - 55, 'Code: ' + response.code, {
                 fontSize: '28px',
+                fontFamily: 'standard',
                 color: '#FFFFFF',
                 backgroundColor: '#000000',
                 padding: { x: 10, y: 5 }
@@ -116,6 +119,7 @@ export class Loading extends Scene {
                             this.pollingTimer.remove();
                             this.errorText = this.add.text(this.scale.width / 2 - 200, this.scale.height / 2, 'Unable to join this game', {
                                 fontSize: '28px',
+                                fontFamily: 'standard',
                                 color: '#ff0000',
                                 backgroundColor: '#000000',
                                 padding: { x: 10, y: 5 }
@@ -146,7 +150,7 @@ export class Loading extends Scene {
                 this.scale.width / 2,
                 this.scale.height / 2 + 100 + index * 30,
                 `${player.name || 'Guest'} - Score: ${player.score}`,
-                { fontSize: '20px', color: '#ffffff' }
+                { fontSize: '20px', fontFamily: 'standard', color: '#ffffff' }
             ).setOrigin(0.5);
             
             this.playersTextGroup.add(playerText);

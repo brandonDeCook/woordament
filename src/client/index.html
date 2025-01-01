@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Woordament Game</title>    
     <style>
+        @font-face {
+            font-family: 'standard';
+            src: url('assets/fonts/standard.ttf') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'title';
+            src: url('assets/fonts/title.ttf') format('truetype');
+        }
+        
         html, body {
             margin: 0;
             padding: 0;
@@ -28,5 +38,7 @@
     <div id="app">
         <div id="game-container"></div>
     </div>
+    <div style="font-family:standard; position:absolute; left:-1000px; visibility:hidden;">.</div>
+    <div style="font-family:title; position:absolute; left:-1000px; visibility:hidden;">.</div>
 </body>
 </html>
