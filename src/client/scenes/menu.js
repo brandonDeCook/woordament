@@ -18,7 +18,14 @@ export class Menu extends Scene {
     this.load.audio("buttonSelect", "assets/sounds/buttonSelect.wav");
   }
 
-  create() {
+  create(){
+    // hack to make sure fonts are loaded in
+    setTimeout(() => {
+      this.delayedCreate();
+    }, 1000);
+  }
+
+  delayedCreate() {
     const isMobile =
       this.sys.game.device.os.android ||
       this.sys.game.device.os.iOS ||
@@ -127,7 +134,7 @@ export class Menu extends Scene {
 
   createInputField(y, placeholder, borderColor, colors) {
     return this.add
-      .rexInputText(this.scale.width / 2, y, 184, 28, {
+      .rexInputText(this.scale.width / 2, y, 190, 28, {
         type: "textarea",
         text: placeholder,
         fontSize: "18px",
