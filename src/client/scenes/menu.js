@@ -43,7 +43,7 @@ export class Menu extends Scene {
 
     const FONT_SIZES = {
       title: isMobile ? "100px" : "200px",
-      button: "32px",
+      button: isMobile ? "24px": "32px",
       input: "24px",
     };
 
@@ -60,7 +60,8 @@ export class Menu extends Scene {
       this.scale.height / 2,
       "Create Game",
       this.handleCreateGame.bind(this),
-      COLORS
+      COLORS,
+      isMobile
     );
 
     const joinGameButtonYpos = createGameButton.y + 50;
@@ -68,7 +69,8 @@ export class Menu extends Scene {
       joinGameButtonYpos,
       "Join Game",
       this.handleJoinGame.bind(this),
-      COLORS
+      COLORS,
+      isMobile
     );
 
     const joinGameCodeInputYpos = joinGameButton.y + 40;
@@ -76,7 +78,8 @@ export class Menu extends Scene {
       joinGameCodeInputYpos,
       "enter code",
       COLORS.inputBorder.code,
-      COLORS
+      COLORS,
+      isMobile
     );
 
     const nicknameButtonYpos = joinGameButton.y + 90;
@@ -88,7 +91,8 @@ export class Menu extends Scene {
       nicknameInputYpos,
       nicknameDefaultText,
       COLORS.inputBorder.nickname,
-      COLORS
+      COLORS,
+      isMobile
     );
 
     this.nicknameInput.on("textchange", () => {
@@ -113,11 +117,11 @@ export class Menu extends Scene {
       .setOrigin(0.5);
   }
 
-  createButton(y, text, callback, colors) {
+  createButton(y, text, callback, colors, isMobile) {
     const button = this.add
       .text(this.scale.width / 2, y, text, {
         fontFamily: "standard",
-        fontSize: "32px",
+        fontSize: isMobile ? "24px" : "32px",
         color: colors.textDefault,
       })
       .setOrigin(0.5)
@@ -132,9 +136,9 @@ export class Menu extends Scene {
     return button;
   }
 
-  createInputField(y, placeholder, borderColor, colors) {
+  createInputField(y, placeholder, borderColor, colors, isMobile) {
     return this.add
-      .rexInputText(this.scale.width / 2, y, 190, 28, {
+      .rexInputText(this.scale.width / 2, y, isMobile ? 200 : 184, 28, {
         type: "textarea",
         text: placeholder,
         fontSize: "18px",

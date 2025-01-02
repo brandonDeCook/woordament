@@ -11,10 +11,17 @@ export class Loading extends Scene {
         this.player = data.player;
         this.isCreateGame = data.buttonClick == "create" ? true : false;
         this.gameService = new GameService('https://api20240727112536.azurewebsites.net');
+        this.gameLoaded = false;
     }
 
     preload() {
-        this.loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 50, this.isCreateGame ? 'Waiting' : 'Loading', {
+        this.isMobile =
+            this.sys.game.device.os.android ||
+            this.sys.game.device.os.iOS ||
+            this.sys.game.device.os.iPad ||
+            this.sys.game.device.os.iPhone;
+
+        this.loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 50, 'Loading', {
             fontSize: '32px',
             fontFamily: 'standard',
             color: '#ffffff',
@@ -44,7 +51,7 @@ export class Loading extends Scene {
         try {
             const response = await this.gameService.create(this.player.id, this.player.nickname);
             this.gameCode = response.code;
-            
+            this.gameLoaded = true;
             this.pollingTimer = this.time.addEvent({
                 delay: 3000,
                 callback: async () => {
@@ -105,7 +112,7 @@ export class Loading extends Scene {
                 callback: async () => {
                     try {
                         const gameData = await this.gameService.get(this.gameCode);
-
+                        this.gameLoaded = true;
                         if (gameData.status === 'IN_PROGRESS') {
                         this.gameService.get(this.gameCode)
                             .then(gameResponse => {
@@ -118,13 +125,16 @@ export class Loading extends Scene {
                         else if(gameData.status == 'DONE') {
                             this.pollingTimer.remove();
                             this.errorText = this.add.text(this.scale.width / 2 - 200, this.scale.height / 2, 'Unable to join this game', {
-                                fontSize: '28px',
+                                fontSize: this.isMobile ? '16px' : '28px',
                                 fontFamily: 'standard',
                                 color: '#ff0000',
                                 backgroundColor: '#000000',
                                 padding: { x: 10, y: 5 }
                             });
                             console.log('Game: ' + gameData.code + ' is currently in state of DONE and cannot be joined');
+                        }
+                        else{
+                            this.renderPlayers(gameData.players);
                         }
                     } catch (error) {
                         console.error('Error fetching game data:', error);
@@ -150,7 +160,7 @@ export class Loading extends Scene {
                 this.scale.width / 2,
                 this.scale.height / 2 + 100 + index * 30,
                 `${player.name || 'Guest'} - Score: ${player.score}`,
-                { fontSize: '20px', fontFamily: 'standard', color: '#ffffff' }
+                { fontSize: this.isMobile ? '16px' : '20px', fontFamily: 'standard', color: '#ffffff' }
             ).setOrigin(0.5);
             
             this.playersTextGroup.add(playerText);
@@ -170,7 +180,7 @@ export class Loading extends Scene {
         this.dotCount = (this.dotCount + 1) % 4;
         let dots = '.'.repeat(this.dotCount);
 
-        if (this.isCreateGame) {
+        if (this.gameLoaded) {
             this.loadingText.setText(`Waiting${dots}`);
         } else {
             this.loadingText.setText(`Loading${dots}`);
