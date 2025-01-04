@@ -124,7 +124,7 @@ export class Loading extends Scene {
                         }
                         else if(gameData.status == 'DONE') {
                             this.pollingTimer.remove();
-                            this.errorText = this.add.text(this.scale.width / 2 - 200, this.scale.height / 2, 'Unable to join this game', {
+                            this.errorText = this.add.text(this.isMobile ? this.scale.width / 2 - 200 : this.scale.width / 2 - 320, this.scale.height / 2, 'Unable to join this game', {
                                 fontSize: this.isMobile ? '16px' : '28px',
                                 fontFamily: 'standard',
                                 color: '#ff0000',

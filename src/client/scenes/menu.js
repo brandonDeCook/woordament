@@ -144,7 +144,7 @@ export class Menu extends Scene {
         fontSize: "18px",
         fontFamily: "standard",
         borderColor,
-        backgroundColor: colors.inputBackground,
+        backgroundColor: colors.inputBackground
       })
       .setFontColor(colors.inputFontColor)
       .setOrigin(0.5)
