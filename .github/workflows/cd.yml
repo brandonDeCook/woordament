@@ -1,0 +1,43 @@
+name: cd
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: build
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Unzip Artifact
+        run: |
+          cd build
+          unzip build-artifacts.zip
+          ls -la dist
+
+      - name: Deploy to Azure Storage
+        run: |
+          # Enable static website (only needs to be done once, but harmless if repeated)
+          az storage blob service-properties update \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --static-website \
+            --index-document index.html \
+            --404-document index.html
+
+          # Upload entire dist folder to the $web container
+          az storage blob upload-batch \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --destination '$web' \
+            --source dist \
+            --pattern '*'
