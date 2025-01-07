@@ -51,5 +51,5 @@ jobs:
           az storage blob upload-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --destination '$web' \
-            --source dist \
+            --source build/dist \
             --pattern '*'
