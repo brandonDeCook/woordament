@@ -52,5 +52,5 @@ jobs:
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
             --destination '$web' \
             --source build/dist \
-            --pattern '*'
+            --pattern '*' \
             --overwrite true
