@@ -53,3 +53,4 @@ jobs:
             --destination '$web' \
             --source build/dist \
             --pattern '*'
+            --overwrite true
