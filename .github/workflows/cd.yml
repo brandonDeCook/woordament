@@ -31,6 +31,13 @@ jobs:
           unzip build-artifacts.zip
           ls -la dist
 
+      - name: Show current directory and contents
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Listing all contents:"
+          ls -R
+
       - name: Deploy to Azure Storage
         run: |
           # Enable static website (only needs to be done once)
