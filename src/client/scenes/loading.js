@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import GameService from '../services/gameService';
+import Colors from '../constants';
 
 export class Loading extends Scene {
     constructor() {
@@ -24,7 +25,7 @@ export class Loading extends Scene {
         this.loadingText = this.add.text(this.scale.width / 2, this.scale.height / 2 - 50, 'Loading', {
             fontSize: '32px',
             fontFamily: 'standard',
-            color: '#ffffff',
+            color: Colors.WHITE.anchor,
         }).setOrigin(0.5);
 
         this.dotCount = 0;
@@ -69,8 +70,8 @@ export class Loading extends Scene {
             this.startButton = this.add.text(this.scale.width / 2, this.scale.height / 2 + 50, 'Start', {
                 fontSize: '28px',
                 fontFamily: 'standard',
-                color: '#00ff00',
-                backgroundColor: '#000000',
+                color: Colors.GREEN.anchor,
+                backgroundColor: Colors.BLACK.anchor,
                 padding: { x: 10, y: 5 }
             })
             .setOrigin(0.5)
@@ -88,8 +89,8 @@ export class Loading extends Scene {
             this.gameCodeText = this.add.text(this.startButton.x - 170, this.startButton.y - 55, 'Code: ' + response.code, {
                 fontSize: '28px',
                 fontFamily: 'standard',
-                color: '#FFFFFF',
-                backgroundColor: '#000000',
+                color: Colors.WHITE.anchor,
+                backgroundColor: Colors.BLACK.anchor,
                 padding: { x: 10, y: 5 }
             });
 
@@ -127,8 +128,8 @@ export class Loading extends Scene {
                             this.errorText = this.add.text(this.isMobile ? this.scale.width / 2 - 200 : this.scale.width / 2 - 320, this.scale.height / 2, 'Unable to join this game', {
                                 fontSize: this.isMobile ? '16px' : '28px',
                                 fontFamily: 'standard',
-                                color: '#ff0000',
-                                backgroundColor: '#000000',
+                                color: Colors.RED.anchor,
+                                backgroundColor: Colors.BLACK.anchor,
                                 padding: { x: 10, y: 5 }
                             });
                             console.log('Game: ' + gameData.code + ' is currently in state of DONE and cannot be joined');
@@ -160,7 +161,7 @@ export class Loading extends Scene {
                 this.scale.width / 2,
                 this.scale.height / 2 + 100 + index * 30,
                 `${player.name || 'Guest'} - Score: ${player.score}`,
-                { fontSize: this.isMobile ? '16px' : '20px', fontFamily: 'standard', color: '#ffffff' }
+                { fontSize: this.isMobile ? '16px' : '20px', fontFamily: 'standard', color: Colors.WHITE.anchor }
             ).setOrigin(0.5);
             
             this.playersTextGroup.add(playerText);

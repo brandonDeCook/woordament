@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import GameService from "../services/gameService";
+import Colors from "../constants";
 
 export class Leaderboard extends Scene {
   constructor() {
@@ -27,7 +28,7 @@ export class Leaderboard extends Scene {
       .text(width / 2, height * 0.05, "Loading.", {
         fontSize: `${baseFontSize}px`,
         fontFamily: 'standard',
-        color: "#ffffff",
+        color: Colors.WHITE.anchor,
       })
       .setOrigin(0.5);
 
@@ -42,7 +43,7 @@ export class Leaderboard extends Scene {
       .text(width / 2, height * 0.12, "Leaderboard", {
         fontSize: `${titleFontSize}px`,
         fontFamily: 'standard',
-        color: "#ffffff",
+        color: Colors.WHITE.anchor,
         fontStyle: "bold",
       })
       .setOrigin(0.5);
@@ -114,7 +115,7 @@ export class Leaderboard extends Scene {
         .text(width * 0.5, listStartY + index * lineHeight, displayText, {
           fontSize: `${fontSize}px`,
           fontFamily: 'standard',
-          color: "#ffffff",
+          color: Colors.WHITE.anchor,
         })
         .setOrigin(0.5, 0);
     });
