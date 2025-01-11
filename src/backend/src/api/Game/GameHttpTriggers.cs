@@ -47,7 +47,7 @@ public class GameHttpTriggers
         if (game is null)
         {
             return new NotFoundResult();
-        }   
+        }
         return new OkObjectResult(game);
     }
 
