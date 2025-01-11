@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import Utils from "../utils";
+import Colors from "../constants";
 
 export class Menu extends Scene {
   constructor() {
@@ -32,22 +33,13 @@ export class Menu extends Scene {
       this.sys.game.device.os.iPad ||
       this.sys.game.device.os.iPhone;
 
-    const COLORS = {
-      background: "#000000",
-      textDefault: "#ffffff",
-      textHover: "#ff0",
-      inputBorder: { code: "yellow", nickname: "blue" },
-      inputBackground: "white",
-      inputFontColor: "black",
-    };
-
     const FONT_SIZES = {
       title: isMobile ? "100px" : "200px",
       button: isMobile ? "24px": "32px",
       input: "24px",
     };
 
-    this.cameras.main.setBackgroundColor(COLORS.background);
+    this.cameras.main.setBackgroundColor(Colors.BLACK.anchor);
 
     this.addCenteredText(
       isMobile ? this.scale.height / 3 : this.scale.height / 4,
@@ -60,7 +52,6 @@ export class Menu extends Scene {
       this.scale.height / 2,
       "Create Game",
       this.handleCreateGame.bind(this),
-      COLORS,
       isMobile
     );
 
@@ -69,7 +60,6 @@ export class Menu extends Scene {
       joinGameButtonYpos,
       "Join Game",
       this.handleJoinGame.bind(this),
-      COLORS,
       isMobile
     );
 
@@ -77,8 +67,7 @@ export class Menu extends Scene {
     this.joinGameCodeInput = this.createInputField(
       joinGameCodeInputYpos,
       "enter code",
-      COLORS.inputBorder.code,
-      COLORS,
+      Colors.ORANGE.anchor,
       isMobile
     );
 
@@ -90,8 +79,7 @@ export class Menu extends Scene {
     this.nicknameInput = this.createInputField(
       nicknameInputYpos,
       nicknameDefaultText,
-      COLORS.inputBorder.nickname,
-      COLORS,
+      Colors.ORANGE.anchor,
       isMobile
     );
 
@@ -117,26 +105,26 @@ export class Menu extends Scene {
       .setOrigin(0.5);
   }
 
-  createButton(y, text, callback, colors, isMobile) {
+  createButton(y, text, callback, isMobile) {
     const button = this.add
       .text(this.scale.width / 2, y, text, {
         fontFamily: "standard",
         fontSize: isMobile ? "24px" : "32px",
-        color: colors.textDefault,
+        color: Colors.WHITE.anchor,
       })
       .setOrigin(0.5)
       .setInteractive();
 
-    button.on("pointerover", () => button.setStyle({ fill: colors.textHover }));
+    button.on("pointerover", () => button.setStyle({ fill: Colors.ORANGE.anchor }));
     button.on("pointerout", () =>
-      button.setStyle({ fill: colors.textDefault })
+      button.setStyle({ fill: Colors.WHITE.anchor })
     );
     button.on("pointerdown", callback);
 
     return button;
   }
 
-  createInputField(y, placeholder, borderColor, colors, isMobile) {
+  createInputField(y, placeholder, borderColor, isMobile) {
     return this.add
       .rexInputText(this.scale.width / 2, y, isMobile ? 200 : 184, 28, {
         type: "textarea",
@@ -144,9 +132,9 @@ export class Menu extends Scene {
         fontSize: "18px",
         fontFamily: "standard",
         borderColor,
-        backgroundColor: colors.inputBackground
+        backgroundColor: Colors.WHITE.anchor
       })
-      .setFontColor(colors.inputFontColor)
+      .setFontColor(Colors.BLACK.anchor)
       .setOrigin(0.5)
       .on("focus", (input) => {
         if (input.text === placeholder) {

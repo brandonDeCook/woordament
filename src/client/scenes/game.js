@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import Colors from "../constants";
 
 export class Game extends Scene {
   constructor() {
@@ -65,7 +66,7 @@ export class Game extends Scene {
           startY + y * (cellSize + cellBuffer)
         );
 
-        const box = this.add.rectangle(0, 0, cellSize, cellSize, 0xeeeeee);
+        const box = this.add.rectangle(0, 0, cellSize, cellSize, 0xfcfcfc);
         box.setStrokeStyle(2, 0x000000);
         box.setOrigin(0);
         container.add(box);
@@ -75,7 +76,7 @@ export class Game extends Scene {
           cellSize / 2,
           cellSize / 2,
           circleRadius,
-          0xffffff
+          Colors.WHITE.hex
         );
         circle.setAlpha(0.01);
         circle.setInteractive();
@@ -84,7 +85,7 @@ export class Game extends Scene {
         const text = this.add.text(cellSize / 2, cellSize / 2, letter, {
           fontSize: isMobile ? Math.floor(cellSize / 2) + "px" : "44px",
           fontFamily: 'standard',
-          fill: "black",
+          fill: Colors.BLACK.anchor,
         });
         text.setOrigin(0.5);
         container.add(text);
@@ -109,37 +110,37 @@ export class Game extends Scene {
       this.selectedText = this.add.text(138, height - 30, "Selected: ", {
         fontSize: "20px",
         fontFamily: 'standard',
-        fill: "white",
+        fill: Colors.WHITE.anchor,
       });
 
       this.timerText = this.add.text(254, height - 590, "Time: 01:30", {
         fontSize: "26px",
         fontFamily: 'standard',
-        fill: "white",
+        fill: Colors.WHITE.anchor,
       });
 
       this.scoreText = this.add.text(500, height - 30, "Score:", {
         fontSize: "20px",
         fontFamily: 'standard',
-        fill: "white",
+        fill: Colors.WHITE.anchor,
       });
     } else {
       this.selectedText = this.add.text(startX, startY + 314, "Selected: ", {
         fontSize: "18px",
         fontFamily: 'standard',
-        fill: "white",
+        fill: Colors.WHITE.anchor,
       });
 
       this.timerText = this.add.text(startX + 60, startY - 20, "Time: 01:30", {
         fontSize: "18px",
         fontFamily: 'standard',
-        fill: "white",
+        fill: Colors.WHITE.anchor,
       });
 
       this.scoreText = this.add.text(startX, startY + 334, "Score:", {
         fontSize: "18px",
         fontFamily: 'standard',
-        fill: "white",
+        fill: Colors.WHITE.anchor,
       });
     }
 
@@ -170,22 +171,22 @@ export class Game extends Scene {
       !this.scene.correctSelectedWords.includes(selectedWord)
     ) {
       this.scene.selectedContainers.forEach((container) => {
-        container.text.setColor("black");
-        container.box.setFillStyle(0x00ff00);
+        container.text.setColor(Colors.BLACK.anchor);
+        container.box.setFillStyle(Colors.GREEN.hex);
       });
       this.scene.correctSelectedWords.push(selectedWord);
       this.scene.score += this.scene.loadedWordList[selectedWord.toLowerCase()];
       this.scene.sound.play("wordSuccess");
     } else if (this.scene.correctSelectedWords.includes(selectedWord)) {
       this.scene.selectedContainers.forEach((container) => {
-        container.text.setColor("white");
-        container.box.setFillStyle(0xffcc00);
+        container.text.setColor(Colors.WHITE.anchor);
+        container.box.setFillStyle(Colors.ORANGE.hex);
       });
       this.scene.sound.play("wordFail");
     } else {
       this.scene.selectedContainers.forEach((container) => {
-        container.text.setColor("white");
-        container.box.setFillStyle(0xff0000);
+        container.text.setColor(Colors.WHITE.anchor);
+        container.box.setFillStyle(Colors.RED.hex);
       });
       this.scene.sound.play("wordFail");
     }
@@ -202,8 +203,8 @@ export class Game extends Scene {
           )
         ) {
           cell.container.selected = false;
-          cell.text.setColor("black");
-          cell.box.setFillStyle(0xeeeeee);
+          cell.text.setColor(Colors.BLACK.anchor);
+          cell.box.setFillStyle(Colors.WHITE.hex);
         }
       })
     );
@@ -215,8 +216,8 @@ export class Game extends Scene {
       this.grid.forEach((row) =>
         row.forEach((cell) => {
           cell.container.selected = false;
-          cell.text.setColor("black");
-          cell.box.setFillStyle(0xeeeeee);
+          cell.text.setColor(Colors.BLACK.anchor);
+          cell.box.setFillStyle(Colors.WHITE.hex);
         })
       );
     }
@@ -249,8 +250,8 @@ export class Game extends Scene {
       }
 
       if (isValidSelection) {
-        text.setColor("#FFFFFF");
-        container.getAt(0).setFillStyle(0x6fa8dc);
+        text.setColor(Colors.WHITE.anchor);
+        container.getAt(0).setFillStyle(Colors.BLUE.hex);
         container.selected = true;
         this.selectedContainers.push({
           container,
