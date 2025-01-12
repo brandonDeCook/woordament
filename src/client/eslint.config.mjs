@@ -7,16 +7,19 @@ export default [
     ignores: ["node_modules"],
     languageOptions: {
       ecmaVersion: "latest",
-      sourceType: "module"
+      sourceType: "module",
+      globals: {
+        localStorage: "readonly",
+        window: "readonly",
+        document: "readonly",
+        console: "readonly",
+        fetch: "readonly"
+      }
     },
     rules: {
       "no-unused-vars": "warn",
       eqeqeq: "error",
       "no-console": "warn"
-    },
-    env: {
-      browser: true,
-      es2021: true
     }
   }
 ];
