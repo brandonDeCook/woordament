@@ -10,7 +10,7 @@ export class Loading extends Scene {
     init(data) {
         this.gameCode = data.gameCode;
         this.player = data.player;
-        this.isCreateGame = data.buttonClick == "create" ? true : false;
+        this.isCreateGame = data.buttonClick === "create" ? true : false;
         this.gameService = new GameService('https://api20240727112536.azurewebsites.net');
         this.gameLoaded = false;
     }
@@ -123,7 +123,7 @@ export class Loading extends Scene {
                                 console.error('Error starting game:', error);
                             });
                         }
-                        else if(gameData.status == 'DONE') {
+                        else if(gameData.status === 'DONE') {
                             this.pollingTimer.remove();
                             this.errorText = this.add.text(this.isMobile ? this.scale.width / 2 - 200 : this.scale.width / 2 - 320, this.scale.height / 2, 'Unable to join this game', {
                                 fontSize: this.isMobile ? '16px' : '28px',

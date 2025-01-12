@@ -23,6 +23,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+      - name: Install dependencies
+        run: |
+          cd src/client
+          npm install
+      - name: Run ESLint
+        run: |
+          cd src/client
+          npx eslint .
       - uses: super-linter/super-linter@v7
         env:
           DEFAULT_BRANCH: main
@@ -36,3 +48,20 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
     secrets: inherit
+
+  security:
+    runs-on: ubuntu-latest
+    steps:      
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+      - name: Install dependencies
+        run: |
+          cd src/client
+          npm install
+      - name: Run npm audit
+        run: |
+          cd src/client
+          npm audit --production
