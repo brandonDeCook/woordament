@@ -3,7 +3,6 @@ import { Menu } from "./scenes/menu";
 import { Loading } from "./scenes/loading";
 import AwaitLoaderPlugin from "phaser3-rex-plugins/plugins/awaitloader-plugin.js";
 import { Leaderboard } from "./scenes/leaderboard";
-import { Phaser } from "phaser";
 
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 const mobileWidth = window.innerWidth;
