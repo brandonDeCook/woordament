@@ -187,7 +187,7 @@ export class Menu extends Scene {
     }
     this.player.nickname = this.nicknameInput.text;
 
-    if (this.player.id == null) {
+    if (this.player.id === null) {
       this.player.id = Utils.generateGUID();
     }
 
