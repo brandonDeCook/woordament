@@ -32,7 +32,9 @@ jobs:
           cd src/client
           npm install
       - name: Run ESLint
-        run: npx eslint . --ext .js,.ts
+        run: |
+          cd src/client
+          npx eslint . --ext .js,.ts
       - uses: super-linter/super-linter@v7
         env:
           DEFAULT_BRANCH: main
