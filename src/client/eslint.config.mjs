@@ -13,6 +13,10 @@ export default [
       "no-unused-vars": "warn",
       eqeqeq: "error",
       "no-console": "warn"
+    },
+    env: {
+      browser: true,
+      es2021: true
     }
   }
 ];
