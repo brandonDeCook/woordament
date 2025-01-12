@@ -167,7 +167,7 @@ export class Game extends Scene {
   endSelection(pointer) {
     let selectedWord = this.scene.getSelectedText();
     if (
-      this.scene.loadedWordList.hasOwnProperty(selectedWord.toLowerCase()) &&
+      this.scene.loadedWordList.includes(selectedWord.toLowerCase()) &&
       !this.scene.correctSelectedWords.includes(selectedWord)
     ) {
       this.scene.selectedContainers.forEach((container) => {
@@ -199,7 +199,7 @@ export class Game extends Scene {
         if (
           this.scene.selectedContainers.some(
             (selectedContainer) =>
-              selectedContainer.container.id != cell.container.id
+              selectedContainer.container.id !== cell.container.id
           )
         ) {
           cell.container.selected = false;
@@ -224,7 +224,7 @@ export class Game extends Scene {
 
     if (this.isSelecting && !container.selected) {
       let isValidSelection = true;
-      if (this.prevSelectionCoordinates.length == 2) {
+      if (this.prevSelectionCoordinates.length === 2) {
         const [prevX, prevY] = this.prevSelectionCoordinates;
 
         const directions = [
@@ -278,7 +278,7 @@ export class Game extends Scene {
       this.timerText.setText("Time: 00:00");
       this.scene.stop();
       this.player.score =
-        this.score == null || this.score === 0 ? 1 : this.score;
+        this.score === null || this.score === 0 ? 1 : this.score;
       this.scene.start("Leaderboard", { player: this.player, game: this.game });
     }
   }
