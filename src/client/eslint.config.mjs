@@ -21,7 +21,9 @@ export default [
         require: "readonly",
         module: "readonly",
         process: "readonly",
-        __dirname: "readonly"
+        __dirname: "readonly",
+        // Phaser globals
+        Phaser: "readonly"
       }
     },
     rules: {
