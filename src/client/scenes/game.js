@@ -164,7 +164,7 @@ export class Game extends Scene {
       .join("");
   }
 
-  endSelection(pointer) {
+  endSelection() {
     let selectedWord = this.scene.getSelectedText();
     if (
       Object.prototype.hasOwnProperty.call(
