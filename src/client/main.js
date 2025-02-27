@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { Game } from "./scenes/game";
 import { Menu } from "./scenes/menu";
 import { Loading } from "./scenes/loading";
