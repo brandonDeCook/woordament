@@ -127,7 +127,6 @@ export class Menu extends Scene {
   createInputField(y, placeholder, borderColor, isMobile) {
     return this.add
       .rexInputText(this.scale.width / 2, y, isMobile ? 200 : 184, 28, {
-        type: "textarea",
         text: placeholder,
         fontSize: "18px",
         fontFamily: "standard",
@@ -141,7 +140,7 @@ export class Menu extends Scene {
           input.text = "";
         }
       });
-  }
+  }  
 
   setupInputBlur(input) {
     this.input.on("pointerdown", () => input.setBlur());

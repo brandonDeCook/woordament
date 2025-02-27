@@ -5,7 +5,7 @@ on:
 
 jobs:
   build: 
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -32,7 +32,7 @@ jobs:
           zip -r build-artifacts.zip dist
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: src/client/build-artifacts.zip
