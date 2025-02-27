@@ -140,8 +140,7 @@ export class Menu extends Scene {
           input.text = "";
         }
       });
-  }
-  
+  }  
 
   setupInputBlur(input) {
     this.input.on("pointerdown", () => input.setBlur());
