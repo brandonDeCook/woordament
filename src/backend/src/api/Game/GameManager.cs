@@ -25,7 +25,7 @@ public class GameManager
         var code = new string(Enumerable.Repeat(_codeCharacters, 5)
             .Select(s => s[random.Next(s.Length)]).ToArray());
 
-        var game = new Game([new Player(hostId, hostName, PlayerType.HOST, 0)], GameStatus.WAITING, board, code, Guid.NewGuid());
+        var game = new Game([new Player(hostId, NormalizeName(hostName), PlayerType.HOST, 0)], GameStatus.WAITING, board, code, Guid.NewGuid());
 
         _ = await _gamesBlobContainerClient.GetBlobClient($"{code}.json")
             .UploadAsync(BinaryData.FromObjectAsJson(game, GameJsonSerializerOptions.Default), overwrite: true);
@@ -53,6 +53,8 @@ public class GameManager
         throw new ArgumentException("Invalid Game state change");
     }
 
+    private static string NormalizeName(string? name) => name?.Trim() ?? string.Empty;
+
     public async Task<Game?> Get(string code)
     {
         var blobClient = _gamesBlobContainerClient.GetBlobClient($"{code}.json");
@@ -73,6 +75,8 @@ public class GameManager
         {
             return null;
         }
+
+        name = NormalizeName(name);
 
         var result = game.Players
             .Select((player, idx) => new { Player = player, Index = idx })
