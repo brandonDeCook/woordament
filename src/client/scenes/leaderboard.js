@@ -15,7 +15,7 @@ export class Leaderboard extends Scene {
   init(data) {
     this.game = data.game;
     this.player = data.player;
-    this.scoreSubmitted = data.scoreSubmitted === true;
+    this.scoreSubmission = data.scoreSubmission ?? null;
     this.polling = true;
   }
 
@@ -50,7 +50,12 @@ export class Leaderboard extends Scene {
       })
       .setOrigin(0.5);
 
-    if (!this.scoreSubmitted) {
+    // Wait for any in-flight submission from the game scene instead of
+    // sending a second, overlapping update.
+    const alreadySubmitted = this.scoreSubmission
+      ? await this.scoreSubmission
+      : false;
+    if (!alreadySubmitted) {
       await this.updatePlayerScore();
     }
     await this.pollForLeaderboardUpdates();

@@ -53,7 +53,7 @@ export class Game extends Scene {
     this.timerText = null;
     this.rotation = 0;
     this.finished = false;
-    this.scoreSubmitted = false;
+    this.submission = null;
     this.lastDisplayedSeconds = null;
     this.endTime = Date.now() + GAME_DURATION_MS;
     this.score = 0;
@@ -540,7 +540,14 @@ export class Game extends Scene {
     return this.score == null || this.score === 0 ? 1 : this.score;
   }
 
-  async submitFinalScore() {
+  // One submission per game: the watchdog and finishGame share the same
+  // in-flight request, which resolves to whether the score was saved.
+  submitFinalScore() {
+    this.submission ??= this.sendFinalScore();
+    return this.submission;
+  }
+
+  async sendFinalScore() {
     this.player.score = this.getFinalScore();
 
     try {
@@ -550,9 +557,10 @@ export class Game extends Scene {
         name: this.player.nickname,
         score: this.player.score,
       });
-      this.scoreSubmitted = true;
+      return true;
     } catch (error) {
       console.error("Failed to submit final score:", error);
+      return false;
     }
   }
 
@@ -590,7 +598,7 @@ export class Game extends Scene {
     this.scene.start("Leaderboard", {
       player: this.player,
       game: this.game,
-      scoreSubmitted: this.scoreSubmitted,
+      scoreSubmission: this.submission,
     });
   }
 }
