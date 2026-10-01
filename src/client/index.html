@@ -37,6 +37,12 @@
         textarea  {
             cursor: url('assets/cursors/ibeam.png'), text;
         }
+
+        /* Phaser's DOM inputs are 3D-transformed; at opacity 1 Chromium squashes their
+           layers and punches a transparent hole in the canvas above them. */
+        #game-container input {
+            opacity: 0.999 !important;
+        }
     </style>
 </head>
 <body>

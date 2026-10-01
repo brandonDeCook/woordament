@@ -11,6 +11,7 @@ const mobileHeight = window.innerHeight;
 
 const config = {
   type: Phaser.AUTO,
+  pixelArt: true,
   width: isMobile ? mobileWidth : 800,
   height: isMobile ? mobileHeight : 600,
 
