@@ -404,3 +404,7 @@ node_modules/
 # Build output
 dist/
 /src/backend/src/api/local.settings.json
+
+# create-board skill
+.github/skills/create-board/.cache/
+generated-boards/

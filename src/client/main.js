@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { Game } from "./scenes/game";
 import { Menu } from "./scenes/menu";
 import { Loading } from "./scenes/loading";
-import AwaitLoaderPlugin from "phaser3-rex-plugins/plugins/awaitloader-plugin.js";
 import { Leaderboard } from "./scenes/leaderboard";
 
 const isMobile = /Mobi|Android/i.test(navigator.userAgent);
@@ -11,6 +10,7 @@ const mobileHeight = window.innerHeight;
 
 const config = {
   type: Phaser.AUTO,
+  pixelArt: true,
   width: isMobile ? mobileWidth : 800,
   height: isMobile ? mobileHeight : 600,
 
@@ -26,16 +26,6 @@ const config = {
   },
 
   scene: [Menu, Game, Loading, Leaderboard],
-
-  plugins: {
-    global: [
-      {
-        key: "rexAwaitLoader",
-        plugin: AwaitLoaderPlugin,
-        start: true,
-      },
-    ],
-  },
 };
 
 export default new Phaser.Game(config);
