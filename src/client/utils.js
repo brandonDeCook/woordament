@@ -18,11 +18,20 @@ export default class Utils {
     return guid;
   }
 
+  // Pixel fonts only render crisply at whole multiples of their native grid.
+  static snapFontSize(size, grid = 8) {
+    return `${Math.max(grid, Math.round(size / grid) * grid)}px`;
+  }
+
+  static normalizeName(name) {
+    return String(name ?? "").replace(/\s+/g, " ").trim();
+  }
+
   static getPlayerFromLocalStorage() {    
     var playerId = localStorage.getItem('playerId');
     var playerNickname = localStorage.getItem('playerNickname');
 
-    return { id: playerId, nickname: playerNickname };
+    return { id: playerId, nickname: Utils.normalizeName(playerNickname) };
   }
 
   static setPlayerToLocalStorage(playerId, playerNickname) {

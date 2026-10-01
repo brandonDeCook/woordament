@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import GameService from '../services/gameService';
 import Colors from '../constants';
+import Utils from '../utils';
 
 export class Loading extends Scene {
     constructor() {
@@ -68,7 +69,7 @@ export class Loading extends Scene {
             });
 
             this.startButton = this.add.text(this.scale.width / 2, this.scale.height / 2 + 50, 'Start', {
-                fontSize: '28px',
+                fontSize: '24px',
                 fontFamily: 'standard',
                 color: Colors.GREEN.anchor,
                 backgroundColor: Colors.BLACK.anchor,
@@ -87,7 +88,7 @@ export class Loading extends Scene {
             });
 
             this.gameCodeText = this.add.text(this.startButton.x - 170, this.startButton.y - 55, 'Code: ' + response.code, {
-                fontSize: '28px',
+                fontSize: '24px',
                 fontFamily: 'standard',
                 color: Colors.WHITE.anchor,
                 backgroundColor: Colors.BLACK.anchor,
@@ -126,7 +127,7 @@ export class Loading extends Scene {
                         else if(gameData.status === 'DONE') {
                             this.pollingTimer.remove();
                             this.errorText = this.add.text(this.isMobile ? this.scale.width / 2 - 200 : this.scale.width / 2 - 320, this.scale.height / 2, 'Unable to join this game', {
-                                fontSize: this.isMobile ? '16px' : '28px',
+                                fontSize: this.isMobile ? '16px' : '24px',
                                 fontFamily: 'standard',
                                 color: Colors.RED.anchor,
                                 backgroundColor: Colors.BLACK.anchor,
@@ -160,8 +161,8 @@ export class Loading extends Scene {
             const playerText = this.add.text(
                 this.scale.width / 2,
                 this.scale.height / 2 + 100 + index * 30,
-                `${player.name || 'Guest'} - Score: ${player.score}`,
-                { fontSize: this.isMobile ? '16px' : '20px', fontFamily: 'standard', color: Colors.WHITE.anchor }
+                `${Utils.normalizeName(player.name) || 'Guest'} - Score: ${player.score}`,
+                { fontSize: '16px', fontFamily: 'standard', color: Colors.WHITE.anchor }
             ).setOrigin(0.5);
             
             this.playersTextGroup.add(playerText);

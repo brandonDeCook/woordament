@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import GameService from "../services/gameService";
-import Colors from "../constants";
+import Colors, { API_BASE_URL } from "../constants";
+import Utils from "../utils";
 
 export class Leaderboard extends Scene {
   constructor() {
@@ -14,6 +15,7 @@ export class Leaderboard extends Scene {
   init(data) {
     this.game = data.game;
     this.player = data.player;
+    this.scoreSubmitted = data.scoreSubmitted === true;
     this.polling = true;
   }
 
@@ -26,7 +28,7 @@ export class Leaderboard extends Scene {
 
     this.loadingText = this.add
       .text(width / 2, height * 0.05, "Loading.", {
-        fontSize: `${baseFontSize}px`,
+        fontSize: Utils.snapFontSize(baseFontSize),
         fontFamily: 'standard',
         color: Colors.WHITE.anchor,
       })
@@ -41,14 +43,16 @@ export class Leaderboard extends Scene {
 
     this.titleText = this.add
       .text(width / 2, height * 0.12, "Leaderboard", {
-        fontSize: `${titleFontSize}px`,
+        fontSize: Utils.snapFontSize(titleFontSize),
         fontFamily: 'standard',
         color: Colors.WHITE.anchor,
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    await this.updatePlayerScore();
+    if (!this.scoreSubmitted) {
+      await this.updatePlayerScore();
+    }
     await this.pollForLeaderboardUpdates();
   }
 
@@ -61,9 +65,7 @@ export class Leaderboard extends Scene {
   }
 
   async pollForLeaderboardUpdates() {
-    const gameService = new GameService(
-      "https://api20240727112536.azurewebsites.net"
-    );
+    const gameService = new GameService(API_BASE_URL);
     const startTime = Date.now();
 
     const poll = async () => {
@@ -99,7 +101,7 @@ export class Leaderboard extends Scene {
       .filter((player) => player.score > 0)
       .map((player) => ({
         ...player,
-        name: player.name || "Anonymous",
+        name: Utils.normalizeName(player.name) || "Anonymous",
       }))
       .sort((a, b) => b.score - a.score);
 
@@ -113,7 +115,7 @@ export class Leaderboard extends Scene {
       const displayText = `${rank}. ${player.name} - ${player.score}`;
       return this.add
         .text(width * 0.5, listStartY + index * lineHeight, displayText, {
-          fontSize: `${fontSize}px`,
+          fontSize: Utils.snapFontSize(fontSize),
           fontFamily: 'standard',
           color: Colors.WHITE.anchor,
         })
@@ -123,9 +125,7 @@ export class Leaderboard extends Scene {
 
   async updatePlayerScore() {
     try {
-      const gameService = new GameService(
-        "https://api20240727112536.azurewebsites.net"
-      );
+      const gameService = new GameService(API_BASE_URL);
       const response = await gameService.updatePlayers({
         gameId: this.game.code,
         id: this.player.id,

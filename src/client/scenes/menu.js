@@ -34,7 +34,7 @@ export class Menu extends Scene {
       this.sys.game.device.os.iPhone;
 
     const FONT_SIZES = {
-      title: isMobile ? "100px" : "200px",
+      title: isMobile ? "96px" : "192px",
       button: isMobile ? "24px": "32px",
       input: "24px",
     };
@@ -128,7 +128,7 @@ export class Menu extends Scene {
     return this.add
       .rexInputText(this.scale.width / 2, y, isMobile ? 200 : 184, 28, {
         text: placeholder,
-        fontSize: "18px",
+        fontSize: "16px",
         fontFamily: "standard",
         borderColor,
         backgroundColor: Colors.WHITE.anchor
@@ -178,11 +178,11 @@ export class Menu extends Scene {
   }
 
   setupPlayer() {
-    if (
-      this.nicknameInput.text === "" ||
-      this.nicknameInput.text === "enter name"
-    ) {
+    const nickname = Utils.normalizeName(this.nicknameInput.text);
+    if (nickname === "" || nickname === "enter name") {
       this.nicknameInput.text = Utils.generateGameNickname();
+    } else {
+      this.nicknameInput.text = nickname;
     }
     this.player.nickname = this.nicknameInput.text;
 

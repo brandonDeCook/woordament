@@ -7,4 +7,6 @@ const Colors = {
     BLUE: { hex: 0x0078f8, anchor: "#0078f8" },
   };
   
+  export const API_BASE_URL = "https://api20240727112536.azurewebsites.net";
+
   export default Colors;  

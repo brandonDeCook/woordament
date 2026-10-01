@@ -1,5 +1,11 @@
 import { Scene } from "phaser";
-import Colors from "../constants";
+import Colors, { API_BASE_URL } from "../constants";
+import GameService from "../services/gameService";
+import Utils from "../utils";
+
+const GAME_DURATION_MS = 90000;
+const ROTATE_TWEEN_MS = 200;
+const MAX_PATHS = 64;
 
 export class Game extends Scene {
   constructor() {
@@ -45,7 +51,11 @@ export class Game extends Scene {
     this.isSelecting = false;
     this.prevSelectionCoordinates = [];
     this.timerText = null;
-    this.timeRemaining = 90;
+    this.rotation = 0;
+    this.finished = false;
+    this.scoreSubmitted = false;
+    this.lastDisplayedSeconds = null;
+    this.endTime = Date.now() + GAME_DURATION_MS;
     this.score = 0;
 
     const totalGridWidth =
@@ -55,16 +65,15 @@ export class Game extends Scene {
 
     const startX = (width - totalGridWidth) / 2;
     const startY = (height - totalGridHeight) / 2;
+    this.layout = { startX, startY, cellSize, cellBuffer };
 
     for (let y = 0; y < this.gridSize; y++) {
       this.grid[y] = [];
       for (let x = 0; x < this.gridSize; x++) {
         const letter = this.loadedGrid[x][y].toUpperCase();
 
-        const container = this.add.container(
-          startX + x * (cellSize + cellBuffer),
-          startY + y * (cellSize + cellBuffer)
-        );
+        const position = this.getCellPosition(x, y);
+        const container = this.add.container(position.x, position.y);
 
         const box = this.add.rectangle(0, 0, cellSize, cellSize, 0xfcfcfc);
         box.setStrokeStyle(2, 0x000000);
@@ -83,7 +92,7 @@ export class Game extends Scene {
         container.add(circle);
 
         const text = this.add.text(cellSize / 2, cellSize / 2, letter, {
-          fontSize: isMobile ? Math.floor(cellSize / 2) + "px" : "44px",
+          fontSize: isMobile ? Utils.snapFontSize(cellSize / 2) : "40px",
           fontFamily: "standard",
           fill: Colors.BLACK.anchor,
         });
@@ -108,54 +117,85 @@ export class Game extends Scene {
 
     if (!isMobile) {
       this.selectedText = this.add.text(138, height - 30, "Selected: ", {
-        fontSize: "20px",
+        fontSize: "16px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
       });
 
       this.timerText = this.add.text(254, height - 590, "Time: 01:30", {
-        fontSize: "26px",
+        fontSize: "24px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
       });
 
       this.scoreText = this.add.text(500, height - 30, "Score:", {
-        fontSize: "20px",
+        fontSize: "16px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
       });
     } else {
       this.selectedText = this.add.text(startX, startY + 314, "Selected: ", {
-        fontSize: "18px",
+        fontSize: "16px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
       });
 
       this.timerText = this.add.text(startX + 60, startY - 20, "Time: 01:30", {
-        fontSize: "18px",
+        fontSize: "16px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
       });
 
       this.scoreText = this.add.text(startX, startY + 334, "Score:", {
-        fontSize: "18px",
+        fontSize: "16px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
       });
     }
 
-    this.time.addEvent({
-      delay: 1000,
-      callback: this.updateTimer.bind(this),
-      loop: true,
-    });
+    this.rotateButton = this.add
+      .text(
+        isMobile ? startX + totalGridWidth : width - 20,
+        isMobile ? startY - 20 : 10,
+        "Rotate",
+        {
+          fontSize: "16px",
+          fontFamily: "standard",
+          fill: Colors.WHITE.anchor,
+        }
+      )
+      .setOrigin(1, 0)
+      .setInteractive({ useHandCursor: true });
+    this.rotateButton.on("pointerover", () =>
+      this.rotateButton.setStyle({ fill: Colors.ORANGE.anchor })
+    );
+    this.rotateButton.on("pointerout", () =>
+      this.rotateButton.setStyle({ fill: Colors.WHITE.anchor })
+    );
+    this.rotateButton.on("pointerdown", () => this.rotateBoard(1));
 
-    this.input.on("pointerup", this.endSelection);
+    this.input.on("pointerup", this.endSelection, this);
+    this.input.keyboard.on("keydown", this.handleKeyDown, this);
+
+    // Wall-clock watchdog: Phaser's loop pauses when the tab is hidden, so the
+    // final score is submitted from a native timer to keep multiplayer moving.
+    this.deadlineTimeout = window.setTimeout(
+      () => this.submitFinalScore(),
+      GAME_DURATION_MS
+    );
+    this.events.once("shutdown", () =>
+      window.clearTimeout(this.deadlineTimeout)
+    );
   }
 
   update() {
     this.selectedText.setText("Selected:" + this.getSelectedText());
     this.scoreText.setText("Score:" + this.score);
+    this.updateTimer();
+  }
+
+  isExpired() {
+    return Date.now() >= this.endTime;
   }
 
   getSelectedText() {
@@ -164,65 +204,302 @@ export class Game extends Scene {
       .join("");
   }
 
-  endSelection() {
-    let selectedWord = this.scene.getSelectedText();
-    if (
-      Object.prototype.hasOwnProperty.call(
-        this.scene.loadedWordList,
-        selectedWord.toLowerCase()
-      ) &&
-      !this.scene.correctSelectedWords.includes(selectedWord)
-    ) {
-      this.scene.selectedContainers.forEach((container) => {
-        container.text.setColor(Colors.BLACK.anchor);
-        container.box.setFillStyle(Colors.GREEN.hex);
-      });
-      this.scene.correctSelectedWords.push(selectedWord);
-      this.scene.score += this.scene.loadedWordList[selectedWord.toLowerCase()];
-      this.scene.sound.play("wordSuccess");
-    } else if (this.scene.correctSelectedWords.includes(selectedWord)) {
-      this.scene.selectedContainers.forEach((container) => {
-        container.text.setColor(Colors.WHITE.anchor);
-        container.box.setFillStyle(Colors.ORANGE.hex);
-      });
-      this.scene.sound.play("wordFail");
-    } else {
-      this.scene.selectedContainers.forEach((container) => {
-        container.text.setColor(Colors.WHITE.anchor);
-        container.box.setFillStyle(Colors.RED.hex);
-      });
-      this.scene.sound.play("wordFail");
+  getCellPosition(x, y) {
+    const { startX, startY, cellSize, cellBuffer } = this.layout;
+    const last = this.gridSize - 1;
+    const [column, row] = [
+      [x, y],
+      [last - y, x],
+      [last - x, last - y],
+      [y, last - x],
+    ][this.rotation];
+    const step = cellSize + cellBuffer;
+
+    return { x: startX + column * step, y: startY + row * step };
+  }
+
+  rotateBoard(direction) {
+    if (this.finished || this.isSelecting) {
+      return;
     }
 
-    this.scene.isSelecting = false;
-    this.scene.prevSelectionCoordinates = [];
-    this.scene.selectedContainers = [];
-    this.scene.grid.forEach((row) =>
-      row.forEach((cell) => {
-        if (
-          this.scene.selectedContainers.some(
-            (selectedContainer) =>
-              selectedContainer.container.id != cell.container.id
-          )
-        ) {
-          cell.container.selected = false;
-          cell.text.setColor(Colors.BLACK.anchor);
-          cell.box.setFillStyle(Colors.WHITE.hex);
-        }
+    this.rotation = (this.rotation + direction + 4) % 4;
+    this.grid.forEach((row, y) =>
+      row.forEach((cell, x) => {
+        const { x: targetX, y: targetY } = this.getCellPosition(x, y);
+        this.tweens.killTweensOf(cell.container);
+        this.tweens.add({
+          targets: cell.container,
+          x: targetX,
+          y: targetY,
+          duration: ROTATE_TWEEN_MS,
+          ease: "Sine.easeInOut",
+        });
       })
     );
   }
 
+  handleKeyDown(event) {
+    if (
+      this.finished ||
+      this.isExpired() ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowLeft":
+        this.rotateBoard(-1);
+        break;
+      case "ArrowRight":
+        this.rotateBoard(1);
+        break;
+      case "Tab":
+        event.preventDefault();
+        if (!this.isSelecting) {
+          this.cyclePath(event.shiftKey ? -1 : 1);
+        }
+        break;
+      case "Backspace":
+        if (!this.isSelecting) {
+          this.removeLastTile();
+        }
+        break;
+      case "Escape":
+        if (!this.isSelecting) {
+          this.clearSelection();
+        }
+        break;
+      case "Enter":
+        if (!this.isSelecting && !event.repeat) {
+          this.submitSelection();
+        }
+        break;
+      default:
+        if (!this.isSelecting && !event.repeat && /^[a-z]$/i.test(event.key)) {
+          this.typeLetter(event.key.toUpperCase());
+        }
+    }
+  }
+
+  typeLetter(letter) {
+    if (this.selectedContainers.length === 0) {
+      this.resetGrid();
+    }
+
+    const path = this.findPaths(this.getSelectedText() + letter, 1, true)[0];
+    if (!path) {
+      this.sound.play("wordFail");
+      return;
+    }
+
+    this.applyPath(path);
+    this.sound.play("tileSelect");
+  }
+
+  applyPath(path) {
+    this.resetGrid();
+    this.selectedContainers = [];
+    this.prevSelectionCoordinates = [];
+    path.forEach(([x, y]) => this.addToSelection(x, y));
+  }
+
+  // Letters can repeat on the board, so Tab steps through every distinct way
+  // of tracing the typed word.
+  cyclePath(direction) {
+    const word = this.getSelectedText();
+    if (!word) {
+      return;
+    }
+
+    const paths = this.findPaths(word, MAX_PATHS, false);
+    if (paths.length < 2) {
+      return;
+    }
+
+    const current = this.selectedContainers
+      .map(({ x, y }) => `${x},${y}`)
+      .join("|");
+    const index = paths.findIndex(
+      (path) => path.map(([x, y]) => `${x},${y}`).join("|") === current
+    );
+    const next = (index + direction + paths.length) % paths.length;
+
+    this.applyPath(paths[next]);
+    this.sound.play("tileSelect");
+  }
+
+  // Finds up to `limit` paths of adjacent, unused tiles spelling the word. With
+  // `preferSelection`, the current selection is tried first so the highlighted
+  // path stays stable while typing.
+  findPaths(word, limit, preferSelection) {
+    const preferred = preferSelection
+      ? this.selectedContainers.map(({ x, y }) => [x, y])
+      : [];
+    const paths = [];
+    const path = [];
+    const used = new Set();
+
+    const order = (cells, preferredCell) =>
+      preferredCell
+        ? [
+            ...cells.filter(
+              ([x, y]) => x === preferredCell[0] && y === preferredCell[1]
+            ),
+            ...cells.filter(
+              ([x, y]) => x !== preferredCell[0] || y !== preferredCell[1]
+            ),
+          ]
+        : cells;
+
+    const search = (index, candidates) => {
+      for (const [x, y] of candidates) {
+        const key = `${x},${y}`;
+        if (
+          x < 0 ||
+          y < 0 ||
+          x >= this.gridSize ||
+          y >= this.gridSize ||
+          used.has(key) ||
+          this.grid[y][x].container.letter !== word[index]
+        ) {
+          continue;
+        }
+
+        used.add(key);
+        path.push([x, y]);
+        if (index === word.length - 1) {
+          paths.push(path.map((cell) => [...cell]));
+        } else {
+          const neighbors = [];
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              if (dx !== 0 || dy !== 0) {
+                neighbors.push([x + dx, y + dy]);
+              }
+            }
+          }
+          search(index + 1, order(neighbors, preferred[index + 1]));
+        }
+
+        path.pop();
+        used.delete(key);
+        if (paths.length >= limit) {
+          return;
+        }
+      }
+    };
+
+    const allCells = [];
+    for (let y = 0; y < this.gridSize; y++) {
+      for (let x = 0; x < this.gridSize; x++) {
+        allCells.push([x, y]);
+      }
+    }
+
+    search(0, order(allCells, preferred[0]));
+    return paths;
+  }
+
+  removeLastTile() {
+    const last = this.selectedContainers.pop();
+    if (!last) {
+      return;
+    }
+
+    last.container.selected = false;
+    last.text.setColor(Colors.BLACK.anchor);
+    last.box.setFillStyle(Colors.WHITE.hex);
+
+    const previous = this.selectedContainers[this.selectedContainers.length - 1];
+    this.prevSelectionCoordinates = previous ? [previous.x, previous.y] : [];
+  }
+
+  clearSelection() {
+    this.resetGrid();
+    this.selectedContainers = [];
+    this.prevSelectionCoordinates = [];
+  }
+
+  resetGrid() {
+    this.grid.forEach((row) =>
+      row.forEach((cell) => {
+        cell.container.selected = false;
+        cell.text.setColor(Colors.BLACK.anchor);
+        cell.box.setFillStyle(Colors.WHITE.hex);
+      })
+    );
+  }
+
+  addToSelection(x, y) {
+    const { container, text, box } = this.grid[y][x];
+    text.setColor(Colors.WHITE.anchor);
+    box.setFillStyle(Colors.BLUE.hex);
+    container.selected = true;
+    this.selectedContainers.push({ container, text, box, x, y });
+    this.prevSelectionCoordinates = [x, y];
+  }
+
+  endSelection() {
+    if (!this.isSelecting) {
+      return;
+    }
+
+    this.isSelecting = false;
+    this.submitSelection();
+  }
+
+  submitSelection() {
+    if (this.selectedContainers.length === 0 || this.isExpired()) {
+      return;
+    }
+
+    const selectedWord = this.getSelectedText();
+    if (
+      Object.prototype.hasOwnProperty.call(
+        this.loadedWordList,
+        selectedWord.toLowerCase()
+      ) &&
+      !this.correctSelectedWords.includes(selectedWord)
+    ) {
+      this.selectedContainers.forEach((container) => {
+        container.text.setColor(Colors.BLACK.anchor);
+        container.box.setFillStyle(Colors.GREEN.hex);
+      });
+      this.correctSelectedWords.push(selectedWord);
+      this.score += this.loadedWordList[selectedWord.toLowerCase()];
+      this.sound.play("wordSuccess");
+    } else if (this.correctSelectedWords.includes(selectedWord)) {
+      this.selectedContainers.forEach((container) => {
+        container.text.setColor(Colors.WHITE.anchor);
+        container.box.setFillStyle(Colors.ORANGE.hex);
+      });
+      this.sound.play("wordFail");
+    } else {
+      this.selectedContainers.forEach((container) => {
+        container.text.setColor(Colors.WHITE.anchor);
+        container.box.setFillStyle(Colors.RED.hex);
+      });
+      this.sound.play("wordFail");
+    }
+
+    this.prevSelectionCoordinates = [];
+    this.selectedContainers = [];
+  }
+
   selectBox(container, text, isStartSelecting, x, y) {
+    if (this.finished || this.isExpired()) {
+      return;
+    }
+
     if (isStartSelecting) {
       this.isSelecting = true;
-      this.grid.forEach((row) =>
-        row.forEach((cell) => {
-          cell.container.selected = false;
-          cell.text.setColor(Colors.BLACK.anchor);
-          cell.box.setFillStyle(Colors.WHITE.hex);
-        })
-      );
+      this.selectedContainers = [];
+      this.prevSelectionCoordinates = [];
+      this.resetGrid();
     }
 
     if (this.isSelecting && !container.selected) {
@@ -253,36 +530,67 @@ export class Game extends Scene {
       }
 
       if (isValidSelection) {
-        text.setColor(Colors.WHITE.anchor);
-        container.getAt(0).setFillStyle(Colors.BLUE.hex);
-        container.selected = true;
-        this.selectedContainers.push({
-          container,
-          text,
-          box: container.getAt(0),
-        });
-        this.prevSelectionCoordinates = [x, y];
+        this.addToSelection(x, y);
       }
       this.sound.play("tileSelect");
     }
   }
 
+  getFinalScore() {
+    return this.score == null || this.score === 0 ? 1 : this.score;
+  }
+
+  async submitFinalScore() {
+    this.player.score = this.getFinalScore();
+
+    try {
+      await new GameService(API_BASE_URL).updatePlayers({
+        gameId: this.game.code,
+        id: this.player.id,
+        name: this.player.nickname,
+        score: this.player.score,
+      });
+      this.scoreSubmitted = true;
+    } catch (error) {
+      console.error("Failed to submit final score:", error);
+    }
+  }
+
+  // Remaining time derives from the wall clock, so it stays correct while the
+  // game loop is paused (e.g. the tab is hidden).
   updateTimer() {
-    if (this.timeRemaining > 0) {
-      this.timeRemaining--;
-      let minutes = Math.floor(this.timeRemaining / 60);
-      let seconds = this.timeRemaining % 60;
+    const remainingMs = Math.max(0, this.endTime - Date.now());
+    const remainingSeconds = Math.ceil(remainingMs / 1000);
+
+    if (remainingSeconds !== this.lastDisplayedSeconds) {
+      this.lastDisplayedSeconds = remainingSeconds;
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
       this.timerText.setText(
         `Time: ${minutes < 10 ? "0" + minutes : minutes}:${
           seconds < 10 ? "0" + seconds : seconds
         }`
       );
-    } else {
-      this.timerText.setText("Time: 00:00");
-      this.scene.stop();
-      this.player.score =
-        this.score == null || this.score === 0 ? 1 : this.score;
-      this.scene.start("Leaderboard", { player: this.player, game: this.game });
     }
+
+    if (remainingMs === 0) {
+      this.finishGame();
+    }
+  }
+
+  finishGame() {
+    if (this.finished) {
+      return;
+    }
+
+    this.finished = true;
+    window.clearTimeout(this.deadlineTimeout);
+    this.player.score = this.getFinalScore();
+    this.scene.stop();
+    this.scene.start("Leaderboard", {
+      player: this.player,
+      game: this.game,
+      scoreSubmitted: this.scoreSubmitted,
+    });
   }
 }
