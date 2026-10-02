@@ -55,6 +55,14 @@ public class GameManager
 
     private static string NormalizeName(string? name) => name?.Trim() ?? string.Empty;
 
+    private static List<string> FilterWords(IEnumerable<string> words, IReadOnlyDictionary<string, double> wordList) =>
+        words
+            .Where(word => word is not null)
+            .Select(word => word.Trim().ToLowerInvariant())
+            .Where(wordList.ContainsKey)
+            .Distinct()
+            .ToList();
+
     public async Task<Game?> Get(string code)
     {
         var blobClient = _gamesBlobContainerClient.GetBlobClient($"{code}.json");
@@ -68,7 +76,8 @@ public class GameManager
         return JsonSerializer.Deserialize<Game>(downloadedGameBlob.Value.Content, GameJsonSerializerOptions.Default);
     }
 
-    public async Task<Game?> UpdatePlayer(string code, Guid playerId, string name, double score)
+    // Null words means "not provided" (old clients, join requests) and keeps the stored list.
+    public async Task<Game?> UpdatePlayer(string code, Guid playerId, string name, double score, IEnumerable<string>? words = null)
     {
         var game = await Get(code).ConfigureAwait(false);
         if (game is null)
@@ -81,13 +90,15 @@ public class GameManager
         var result = game.Players
             .Select((player, idx) => new { Player = player, Index = idx })
             .FirstOrDefault(x => x.Player.Id == playerId);
+        var validWords = words is null ? null : FilterWords(words, game.board.WordList);
+
         if (result is null)
         {
-            game.Players.Add(new Player(playerId, name, PlayerType.GUEST, score));
+            game.Players.Add(new Player(playerId, name, PlayerType.GUEST, score, validWords ?? []));
         }
         else
         {
-            var updatedPlayer = result.Player with { Score = score, Name = name };
+            var updatedPlayer = result.Player with { Score = score, Name = name, Words = validWords ?? result.Player.Words };
             game.Players[result.Index] = updatedPlayer;
         }
 

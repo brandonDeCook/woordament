@@ -556,6 +556,7 @@ export class Game extends Scene {
         id: this.player.id,
         name: this.player.nickname,
         score: this.player.score,
+        words: this.correctSelectedWords.map((word) => word.toLowerCase()),
       });
       return true;
     } catch (error) {
@@ -599,6 +600,7 @@ export class Game extends Scene {
       player: this.player,
       game: this.game,
       scoreSubmission: this.submission,
+      words: this.correctSelectedWords,
     });
   }
 }

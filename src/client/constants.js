@@ -9,4 +9,7 @@ const Colors = {
   
   export const API_BASE_URL = "https://api20240727112536.azurewebsites.net";
 
+  // Master volume for all sound effects (0-1).
+  export const SFX_VOLUME = 0.3;
+
   export default Colors;  

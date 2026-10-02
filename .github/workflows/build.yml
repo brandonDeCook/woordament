@@ -36,3 +36,24 @@ jobs:
         with:
           name: build-artifacts
           path: src/client/build-artifacts.zip
+
+  build-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish function app
+        run: dotnet publish src/backend/src/api/Api.csproj --configuration Release --output api-publish
+
+      - name: Upload function app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-artifacts
+          path: api-publish

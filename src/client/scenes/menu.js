@@ -10,11 +10,14 @@ export class Menu extends Scene {
   }
 
   preload() {
-    this.load.plugin(
-      "rexinputtextplugin",
-      "https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js",
-      true
-    );
+    // The plugin registers itself globally, so it only needs loading once per page.
+    if (!this.add.rexInputText) {
+      this.load.plugin(
+        "rexinputtextplugin",
+        "https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js",
+        true
+      );
+    }
     this.player = Utils.getPlayerFromLocalStorage();
     this.load.audio("buttonSelect", "assets/sounds/buttonSelect.wav");
   }
