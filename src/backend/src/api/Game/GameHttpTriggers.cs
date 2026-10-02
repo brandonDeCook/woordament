@@ -64,7 +64,7 @@ public class GameHttpTriggers
         }
 
         Game? game = await _gameManager
-            .UpdatePlayer(code, updateGamePlayerRequest.Id, updateGamePlayerRequest.Name, updateGamePlayerRequest.Score)
+            .UpdatePlayer(code, updateGamePlayerRequest.Id, updateGamePlayerRequest.Name, updateGamePlayerRequest.Score, updateGamePlayerRequest.Words)
             .ConfigureAwait(false);
         if (game is null)
         {

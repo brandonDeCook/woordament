@@ -13,7 +13,7 @@ public enum PlayerType
     GUEST
 }
 
-public record Player(Guid Id, string Name, PlayerType Type, double Score);
+public record Player(Guid Id, string Name, PlayerType Type, double Score, IReadOnlyList<string>? Words = null);
 
 public record Game(IList<Player> Players, GameStatus Status, Board board, string Code, Guid Id);
 
