@@ -20,10 +20,22 @@ jobs:
           name: build-artifacts
           path: build
 
+      - name: Download function app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: api-artifacts
+          path: api
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy function app
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ vars.AZURE_FUNCTIONAPP_NAME || 'api20240727112536' }}
+          package: api
 
       - name: Unzip Artifact
         run: |
