@@ -57,3 +57,4 @@ jobs:
         with:
           name: api-artifacts
           path: api-publish
+          include-hidden-files: true
