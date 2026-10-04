@@ -9,7 +9,7 @@ Turns a theme ("football", "pirates", "baking") into a board file. **You** (the 
 
 ## Workflow
 
-1. **Get the theme.** If it's vague, ask once. Optional extras: tone (kid-friendly by default), words to avoid.
+1. **Get the theme.** If it's vague, ask once. Optional extras: tone (kid-friendly by default), words to avoid. Keep the `--theme` label to 14 characters or fewer; it is shown above the board.
 2. **Brainstorm 20-30 theme words.** Rules:
    - Lowercase letters only, 3-16 characters, single words (no spaces, hyphens, digits, apostrophes).
    - Real, family-friendly words. No profanity, slurs, or trademarked names.
@@ -42,9 +42,10 @@ Turns a theme ("football", "pirates", "baking") into a board file. **You** (the 
 The file is `<id>.json`, compact JSON, matching the API's `Board` record (camelCase):
 
 ```json
-{ "wordList": { "word": 7 }, "tiles": [["a","b","c","d"], ...4 rows], "id": "<guid>" }
+{ "wordList": { "word": 7 }, "tiles": [["a","b","c","d"], ...4 rows], "id": "<guid>", "theme": "Football" }
 ```
 
+- `theme`: optional short label (max 14 chars) shown above the board in-game. Omitted when `--theme` is not passed; boards without it still work.
 - `tiles`: 4x4, one lowercase letter per tile (the client uppercases for display).
 - `wordList`: lowercase word to points (letter values plus a length bonus for 5+ letters, theme words multiplied).
 - `id`: GUID. Blob name is `<id>.json` in the `boards` container, the same convention as `src/backend/src/board-generator`.
