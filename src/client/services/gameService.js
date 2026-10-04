@@ -13,10 +13,15 @@ class Player {
 }
 
 class Board {
-    constructor(wordList, tiles, id) {
+    constructor(wordList, tiles, id, theme) {
         this.wordList = wordList;
         this.tiles = tiles;
         this.id = id;
+        this.theme = theme ?? null;
+    }
+
+    static fromApi(board) {
+        return new Board(board.wordList, board.tiles, board.id, board.theme);
     }
 }
 
@@ -47,7 +52,7 @@ export default class GameService {
     
             const data = await response.json();
             const players = data.players.map(Player.fromApi);
-            const board = new Board(data.board.wordList, data.board.tiles, data.board.id);
+            const board = Board.fromApi(data.board);
             const gameResponse = new GameResponse(players, data.status, board, data.code, data.id);
     
             return gameResponse;
@@ -75,7 +80,7 @@ export default class GameService {
             
             const data = await response.json();
             const players = data.players.map(Player.fromApi);
-            const board = new Board(data.board.wordList, data.board.tiles, data.board.id);
+            const board = Board.fromApi(data.board);
             const gameResponse = new GameResponse(players, data.status, board, data.code, data.id);
             
             return gameResponse;
@@ -103,7 +108,7 @@ export default class GameService {
 
             const data = await response.json();
             const players = data.players.map(Player.fromApi);
-            const board = new Board(data.board.wordList, data.board.tiles, data.board.id);
+            const board = Board.fromApi(data.board);
             const gameResponse = new GameResponse(players, data.status, board, data.code, data.id);
 
             return gameResponse;
@@ -131,7 +136,7 @@ export default class GameService {
 
             const data = await response.json();
             const players = data.players.map(Player.fromApi);
-            const board = new Board(data.board.wordList, data.board.tiles, data.board.id);
+            const board = Board.fromApi(data.board);
             const gameResponse = new GameResponse(players, data.status, board, data.code, data.id);
 
             return gameResponse;
