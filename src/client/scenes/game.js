@@ -34,6 +34,8 @@ export class Game extends Scene {
     this.gridSize = 4;
 
     const uiMargin = 80;
+    const headerHeight = isMobile ? 28 : 40;
+    const footerHeight = headerHeight;
     const usableWidth = width - uiMargin;
     const usableHeight = height - uiMargin;
     const cellBuffer = 5;
@@ -64,8 +66,27 @@ export class Game extends Scene {
       this.gridSize * cellSize + cellBuffer * (this.gridSize - 1);
 
     const startX = (width - totalGridWidth) / 2;
-    const startY = (height - totalGridHeight) / 2;
+    const framePadding = isMobile ? 8 : 12;
+    const frameWidth = totalGridWidth + framePadding * 2;
+    const frameHeight =
+      totalGridHeight + headerHeight + footerHeight;
+    const frameX = (width - frameWidth) / 2;
+    const frameY = (height - frameHeight) / 2;
+    const startY = frameY + headerHeight;
     this.layout = { startX, startY, cellSize, cellBuffer };
+
+    this.add
+      .rectangle(frameX, frameY, frameWidth, frameHeight, Colors.WHITE.hex)
+      .setOrigin(0);
+    this.add
+      .rectangle(
+        startX - 4,
+        startY - 4,
+        totalGridWidth + 8,
+        totalGridHeight + 8,
+        Colors.BLACK.hex
+      )
+      .setOrigin(0);
 
     for (let y = 0; y < this.gridSize; y++) {
       this.grid[y] = [];
@@ -115,74 +136,53 @@ export class Game extends Scene {
       }
     }
 
-    if (!isMobile) {
-      this.selectedText = this.add.text(138, height - 30, "Selected: ", {
-        fontSize: "16px",
-        fontFamily: "standard",
-        fill: Colors.WHITE.anchor,
-      });
+    const hudFontSize = isMobile ? "8px" : "16px";
+    const headerCenterY = frameY + headerHeight / 2;
+    const footerCenterY = frameY + headerHeight + totalGridHeight + footerHeight / 2;
+    const hudStyle = {
+      fontSize: hudFontSize,
+      fontFamily: "standard",
+      fill: Colors.BLACK.anchor,
+    };
 
-      this.timerText = this.add.text(16, height - 590, "Time: 01:30", {
-        fontSize: "24px",
-        fontFamily: "standard",
-        fill: Colors.WHITE.anchor,
-      });
+    this.timerText = this.add
+      .text(frameX + framePadding, headerCenterY, "Time: 01:30", hudStyle)
+      .setOrigin(0, 0.5);
 
-      this.scoreText = this.add.text(500, height - 30, "Score:", {
-        fontSize: "16px",
-        fontFamily: "standard",
-        fill: Colors.WHITE.anchor,
-      });
-    } else {
-      this.selectedText = this.add.text(startX, startY + 314, "Selected: ", {
-        fontSize: "16px",
-        fontFamily: "standard",
-        fill: Colors.WHITE.anchor,
-      });
+    this.selectedText = this.add
+      .text(frameX + framePadding, footerCenterY, "Selected: ", hudStyle)
+      .setOrigin(0, 0.5);
 
-      this.timerText = this.add.text(startX + 60, startY - 20, "Time: 01:30", {
-        fontSize: "16px",
-        fontFamily: "standard",
-        fill: Colors.WHITE.anchor,
-      });
-
-      this.scoreText = this.add.text(startX, startY + 334, "Score:", {
-        fontSize: "16px",
-        fontFamily: "standard",
-        fill: Colors.WHITE.anchor,
-      });
-    }
+    this.scoreText = this.add
+      .text(frameX + frameWidth - framePadding, footerCenterY, "Score: 0", hudStyle)
+      .setOrigin(1, 0.5);
+    this.selectedTextLabel = "Selected: ";
 
     this.rotateButton = this.add
-      .text(
-        isMobile ? startX + totalGridWidth : width - 20,
-        isMobile ? startY - 20 : 10,
-        "Rotate",
-        {
-          fontSize: "16px",
-          fontFamily: "standard",
-          fill: Colors.WHITE.anchor,
-        }
-      )
-      .setOrigin(1, 0)
+      .text(frameX + frameWidth - framePadding, headerCenterY, "Rotate", hudStyle)
+      .setOrigin(1, 0.5)
       .setInteractive({ useHandCursor: true });
     this.rotateButton.on("pointerover", () =>
       this.rotateButton.setStyle({ fill: Colors.ORANGE.anchor })
     );
     this.rotateButton.on("pointerout", () =>
-      this.rotateButton.setStyle({ fill: Colors.WHITE.anchor })
+      this.rotateButton.setStyle({ fill: Colors.BLACK.anchor })
     );
     this.rotateButton.on("pointerdown", () => this.rotateBoard(1));
 
     const theme = Utils.normalizeName(this.game.board.theme);
     if (theme) {
       this.add
-        .text(width / 2, isMobile ? Math.max(4, startY - 42) : 10, theme.slice(0, 14).toUpperCase(), {
-          fontSize: "16px",
-          fontFamily: "standard",
-          fill: Colors.ORANGE.anchor,
-        })
-        .setOrigin(0.5, 0);
+        .text(
+          frameX + frameWidth / 2,
+          headerCenterY,
+          theme.slice(0, 14).toUpperCase(),
+          {
+            ...hudStyle,
+            fill: Colors.ORANGE.anchor,
+          }
+        )
+        .setOrigin(0.5);
     }
 
     this.input.on("pointerup", this.endSelection, this);
@@ -200,8 +200,22 @@ export class Game extends Scene {
   }
 
   update() {
-    this.selectedText.setText("Selected:" + this.getSelectedText());
-    this.scoreText.setText("Score:" + this.score);
+    this.scoreText.setText("Score: " + this.score);
+    const selectedWord = this.getSelectedText();
+    this.selectedText.setText(this.selectedTextLabel + selectedWord);
+
+    const maxSelectedWidth =
+      this.scoreText.x -
+      this.scoreText.width -
+      this.selectedText.x -
+      this.layout.cellBuffer;
+    let displayedWord = selectedWord;
+    while (this.selectedText.width > maxSelectedWidth && displayedWord.length > 0) {
+      displayedWord = displayedWord.slice(0, -1);
+      this.selectedText.setText(
+        this.selectedTextLabel + displayedWord
+      );
+    }
     this.updateTimer();
   }
 
