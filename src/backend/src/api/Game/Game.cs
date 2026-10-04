@@ -17,4 +17,4 @@ public record Player(Guid Id, string Name, PlayerType Type, double Score, IReadO
 
 public record Game(IList<Player> Players, GameStatus Status, Board board, string Code, Guid Id);
 
-public record Board(IReadOnlyDictionary<string, double> WordList, IList<IList<char>> Tiles, Guid Id);
+public record Board(IReadOnlyDictionary<string, double> WordList, IList<IList<char>> Tiles, Guid Id, string? Theme = null);

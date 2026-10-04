@@ -122,7 +122,7 @@ export class Game extends Scene {
         fill: Colors.WHITE.anchor,
       });
 
-      this.timerText = this.add.text(254, height - 590, "Time: 01:30", {
+      this.timerText = this.add.text(16, height - 590, "Time: 01:30", {
         fontSize: "24px",
         fontFamily: "standard",
         fill: Colors.WHITE.anchor,
@@ -173,6 +173,17 @@ export class Game extends Scene {
       this.rotateButton.setStyle({ fill: Colors.WHITE.anchor })
     );
     this.rotateButton.on("pointerdown", () => this.rotateBoard(1));
+
+    const theme = Utils.normalizeName(this.game.board.theme);
+    if (theme) {
+      this.add
+        .text(width / 2, isMobile ? Math.max(4, startY - 42) : 10, theme.slice(0, 14).toUpperCase(), {
+          fontSize: "16px",
+          fontFamily: "standard",
+          fill: Colors.ORANGE.anchor,
+        })
+        .setOrigin(0.5, 0);
+    }
 
     this.input.on("pointerup", this.endSelection, this);
     this.input.keyboard.on("keydown", this.handleKeyDown, this);

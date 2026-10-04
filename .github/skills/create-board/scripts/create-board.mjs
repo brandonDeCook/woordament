@@ -13,6 +13,7 @@ import { parseArgs } from "node:util";
 const SIZE = 4;
 const CELLS = SIZE * SIZE;
 const MIN_WORD_LENGTH = 3;
+const MAX_THEME_LENGTH = 14;
 const DICTIONARY_URL =
   "https://raw.githubusercontent.com/dolph/dictionary/master/enable1.txt";
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -60,7 +61,7 @@ if (args.help || (!args.words && !args.tiles)) {
   node create-board.mjs --tiles "abcd efgh ijkl mnop" [options]
 
 Options:
-  --theme <name>        Label used in the summary only
+  --theme <name>        Theme label (max 14 chars), saved in the file and shown above the board in-game
   --words <list>        Comma/space separated theme words (letters only, 3-16 chars)
   --tiles <16 letters>  Skip the search and solve this exact board
   --out <dir>           Output folder (default: ./generated-boards)
@@ -314,6 +315,9 @@ function verifyBoardFile(file) {
   if (!guid.test(board.id)) {
     throw new Error("Verification failed: id must be a GUID");
   }
+  if (board.theme !== undefined && (typeof board.theme !== "string" || !board.theme || board.theme.length > MAX_THEME_LENGTH)) {
+    throw new Error(`Verification failed: theme must be a non-empty string of at most ${MAX_THEME_LENGTH} characters`);
+  }
   const words = Object.entries(board.wordList);
   if (!words.length || !words.every(([, points]) => Number.isFinite(points) && points > 0)) {
     throw new Error("Verification failed: wordList must have positive point values");
@@ -329,6 +333,9 @@ async function main() {
   const exclude = new Set(splitList(args.exclude));
   const themeBonus = toInt(args["theme-bonus"], "theme-bonus");
   const minWords = toInt(args["min-words"], "min-words");
+  if (args.theme && args.theme.trim().length > MAX_THEME_LENGTH) {
+    throw new Error(`--theme must be at most ${MAX_THEME_LENGTH} characters (it is shown above the board)`);
+  }
   if (args.id && !/^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(args.id)) {
     throw new Error("--id must be a GUID");
   }
@@ -406,7 +413,8 @@ async function main() {
   const outDir = resolve(args.out);
   mkdirSync(outDir, { recursive: true });
   const file = join(outDir, `${id}.json`);
-  writeFileSync(file, JSON.stringify({ wordList, tiles: rows, id }));
+  const theme = args.theme?.replace(/\s+/g, " ").trim();
+  writeFileSync(file, JSON.stringify({ wordList, tiles: rows, id, ...(theme ? { theme } : {}) }));
   verifyBoardFile(file);
 
   console.log(`\nFile: ${file}  (verified)`);
