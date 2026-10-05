@@ -6,6 +6,12 @@ import Utils from "../utils";
 const GAME_DURATION_MS = 90000;
 const ROTATE_TWEEN_MS = 200;
 const MAX_PATHS = 64;
+const STREAK_REQUIRED_WORDS = 3;
+const STREAK_WINDOW_MS = 4000;
+const BONUS_MULTIPLIER = 1.3;
+const BONUS_DURATION_MS = 8000;
+const HINT_LIMIT = 2;
+const HINT_DISPLAY_MS = 2000;
 
 export class Game extends Scene {
   constructor() {
@@ -59,6 +65,12 @@ export class Game extends Scene {
     this.lastDisplayedSeconds = null;
     this.endTime = Date.now() + GAME_DURATION_MS;
     this.score = 0;
+    this.correctWordStreak = 0;
+    this.lastCorrectWordAt = 0;
+    this.multiplierExpiresAt = 0;
+    this.hintsRemaining = HINT_LIMIT;
+    this.hintedWords = new Set();
+    this.hintTimeout = null;
 
     const totalGridWidth =
       this.gridSize * cellSize + cellBuffer * (this.gridSize - 1);
@@ -158,6 +170,20 @@ export class Game extends Scene {
       .setOrigin(1, 0.5);
     this.selectedTextLabel = "Selected: ";
 
+    this.hintButton = this.add
+      .text(frameX + frameWidth / 2, footerCenterY, "Hint: 2", hudStyle)
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    this.hintButton.on("pointerover", () => {
+      if (this.hintsRemaining > 0) {
+        this.hintButton.setStyle({ fill: Colors.ORANGE.anchor });
+      }
+    });
+    this.hintButton.on("pointerout", () =>
+      this.hintButton.setStyle({ fill: Colors.BLACK.anchor })
+    );
+    this.hintButton.on("pointerdown", () => this.useHint());
+
     this.rotateButton = this.add
       .text(frameX + frameWidth - framePadding, headerCenterY, "Rotate", hudStyle)
       .setOrigin(1, 0.5)
@@ -175,7 +201,7 @@ export class Game extends Scene {
       this.add
         .text(
           frameX + frameWidth / 2,
-          headerCenterY,
+          headerCenterY - (isMobile ? 5 : 8),
           theme.slice(0, 14).toUpperCase(),
           {
             ...hudStyle,
@@ -184,6 +210,21 @@ export class Game extends Scene {
         )
         .setOrigin(0.5);
     }
+
+    this.bonusText = this.add
+      .text(
+        frameX + frameWidth / 2,
+        theme
+          ? headerCenterY + (isMobile ? 6 : 12)
+          : headerCenterY,
+        "",
+        {
+          ...hudStyle,
+          fontSize: "8px",
+          fill: Colors.ORANGE.anchor,
+        }
+      )
+      .setOrigin(0.5);
 
     this.input.on("pointerup", this.endSelection, this);
     this.input.keyboard.on("keydown", this.handleKeyDown, this);
@@ -194,9 +235,10 @@ export class Game extends Scene {
       () => this.submitFinalScore(),
       GAME_DURATION_MS
     );
-    this.events.once("shutdown", () =>
-      window.clearTimeout(this.deadlineTimeout)
-    );
+    this.events.once("shutdown", () => {
+      window.clearTimeout(this.deadlineTimeout);
+      this.clearHintTimeout();
+    });
   }
 
   update() {
@@ -205,8 +247,10 @@ export class Game extends Scene {
     this.selectedText.setText(this.selectedTextLabel + selectedWord);
 
     const maxSelectedWidth =
-      this.scoreText.x -
-      this.scoreText.width -
+      Math.min(
+        this.scoreText.x - this.scoreText.width,
+        this.hintButton.x - this.hintButton.width / 2
+      ) -
       this.selectedText.x -
       this.layout.cellBuffer;
     let displayedWord = selectedWord;
@@ -216,6 +260,7 @@ export class Game extends Scene {
         this.selectedTextLabel + displayedWord
       );
     }
+    this.updateBonusText();
     this.updateTimer();
   }
 
@@ -312,6 +357,7 @@ export class Game extends Scene {
 
   typeLetter(letter) {
     if (this.selectedContainers.length === 0) {
+      this.clearHintTimeout();
       this.resetGrid();
     }
 
@@ -330,6 +376,105 @@ export class Game extends Scene {
     this.selectedContainers = [];
     this.prevSelectionCoordinates = [];
     path.forEach(([x, y]) => this.addToSelection(x, y));
+  }
+
+  useHint() {
+    if (
+      this.finished ||
+      this.isExpired() ||
+      this.isSelecting ||
+      this.hintsRemaining <= 0
+    ) {
+      return;
+    }
+
+    const hint = this.findHint();
+    if (!hint) {
+      return;
+    }
+
+    this.hintsRemaining--;
+    this.hintedWords.add(hint.word);
+    this.updateHintButton();
+    this.clearHintTimeout();
+    this.resetGrid();
+    this.selectedContainers = [];
+    this.prevSelectionCoordinates = [];
+
+    hint.path.forEach(([x, y]) => {
+      const { text, box } = this.grid[y][x];
+      text.setColor(Colors.WHITE.anchor);
+      box.setFillStyle(Colors.ORANGE.hex);
+    });
+
+    this.hintTimeout = window.setTimeout(() => {
+      this.resetGrid();
+      this.hintTimeout = null;
+    }, HINT_DISPLAY_MS);
+  }
+
+  clearHintTimeout() {
+    window.clearTimeout(this.hintTimeout);
+    this.hintTimeout = null;
+  }
+
+  findHint() {
+    const words = Object.keys(this.loadedWordList)
+      .filter((word) => {
+        const normalizedWord = word.toLowerCase();
+        return (
+          !this.correctSelectedWords.includes(word.toUpperCase()) &&
+          !this.hintedWords.has(normalizedWord)
+        );
+      })
+      .sort((first, second) => second.length - first.length);
+
+    for (const word of words) {
+      const path = this.findPaths(word.toUpperCase(), 1, false)[0];
+      if (path) {
+        return { word: word.toLowerCase(), path };
+      }
+    }
+
+    return null;
+  }
+
+  updateHintButton() {
+    this.hintButton.setText(`Hint: ${this.hintsRemaining}`);
+    this.hintButton.setAlpha(this.hintsRemaining > 0 ? 1 : 0.45);
+  }
+
+  updateBonusText() {
+    if (this.multiplierExpiresAt && Date.now() >= this.multiplierExpiresAt) {
+      this.multiplierExpiresAt = 0;
+    }
+
+    this.bonusText.setText(
+      this.multiplierExpiresAt > Date.now() ? "BONUS 30%" : ""
+    );
+  }
+
+  resetWordStreak() {
+    this.correctWordStreak = 0;
+    this.lastCorrectWordAt = 0;
+  }
+
+  getWordScore(baseScore) {
+    const now = Date.now();
+    this.correctWordStreak =
+      now - this.lastCorrectWordAt <= STREAK_WINDOW_MS
+        ? this.correctWordStreak + 1
+        : 1;
+    this.lastCorrectWordAt = now;
+
+    if (this.correctWordStreak === STREAK_REQUIRED_WORDS) {
+      this.multiplierExpiresAt = now + BONUS_DURATION_MS;
+    }
+
+    return Math.round(
+      baseScore *
+        (this.multiplierExpiresAt > now ? BONUS_MULTIPLIER : 1)
+    );
   }
 
   // Letters can repeat on the board, so Tab steps through every distinct way
@@ -444,6 +589,7 @@ export class Game extends Scene {
   }
 
   clearSelection() {
+    this.clearHintTimeout();
     this.resetGrid();
     this.selectedContainers = [];
     this.prevSelectionCoordinates = [];
@@ -495,19 +641,23 @@ export class Game extends Scene {
         container.box.setFillStyle(Colors.GREEN.hex);
       });
       this.correctSelectedWords.push(selectedWord);
-      this.score += this.loadedWordList[selectedWord.toLowerCase()];
+      this.score += this.getWordScore(
+        this.loadedWordList[selectedWord.toLowerCase()]
+      );
       this.sound.play("wordSuccess");
     } else if (this.correctSelectedWords.includes(selectedWord)) {
       this.selectedContainers.forEach((container) => {
         container.text.setColor(Colors.WHITE.anchor);
         container.box.setFillStyle(Colors.ORANGE.hex);
       });
+      this.resetWordStreak();
       this.sound.play("wordFail");
     } else {
       this.selectedContainers.forEach((container) => {
         container.text.setColor(Colors.WHITE.anchor);
         container.box.setFillStyle(Colors.RED.hex);
       });
+      this.resetWordStreak();
       this.sound.play("wordFail");
     }
 
@@ -521,6 +671,7 @@ export class Game extends Scene {
     }
 
     if (isStartSelecting) {
+      this.clearHintTimeout();
       this.isSelecting = true;
       this.selectedContainers = [];
       this.prevSelectionCoordinates = [];
@@ -619,6 +770,7 @@ export class Game extends Scene {
 
     this.finished = true;
     window.clearTimeout(this.deadlineTimeout);
+    this.clearHintTimeout();
     this.player.score = this.getFinalScore();
     this.scene.stop();
     this.scene.start("Leaderboard", {
